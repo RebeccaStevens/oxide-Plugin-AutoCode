@@ -9,7 +9,7 @@ plugins:
         All notable changes to this project will be documented in this file. Dates are displayed in UTC."
   - "@semantic-release/git"
   - - "@semantic-release/exec"
-    - prepareCmd: "./scripts/prepareForRelease.sh ${nextRelease.version}"
+    - prepareCmd: "./scripts/prepareForRelease.js ${nextRelease.version}"
   - - "@semantic-release/github"
     - assets:
       - path: "src/AutoCode.cs"
