@@ -1,0 +1,18 @@
+branches:
+  - main
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/release-notes-generator"
+  - - "@semantic-release/changelog"
+    - changelogTitle: "# Changelog
+
+        All notable changes to this project will be documented in this file. Dates are displayed in UTC."
+  - "@semantic-release/git"
+  - - "@semantic-release/github"
+    - assets:
+      - path: "src/AutoCode.cs"
+        label: "AutoCode.cs"
+      labels:
+        - "Priority: Critical"
+      releasedLabels:
+        - "Status: Released"
