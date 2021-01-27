@@ -36,7 +36,9 @@ namespace Oxide.Plugins
       cmd.AddChatCommand(commandUse, this, ChatCommand);
     }
 
-    protected override void LoadDefaultConfig() => PrintWarning("New configuration file created.");
+    protected override void LoadDefaultConfig() {
+      Interface.Oxide.LogInfo("New configuration file created.");
+    }
 
     void OnServerSave()
     {
@@ -251,7 +253,7 @@ namespace Oxide.Plugins
 
       if (settings == null)
       {
-        Debug.LogError(string.Format("No settings found for use \"{0}\" - setting should already be loaded.", player.displayName));
+        Interface.Oxide.LogError(string.Format("No settings found for use \"{0}\" - setting should already be loaded.", player.displayName));
         return;
       }
 
@@ -322,7 +324,7 @@ namespace Oxide.Plugins
       // Creation failed? Exit.
       if (codeLock == null)
       {
-        Debug.LogError("Failed to create code lock.");
+        Interface.Oxide.LogError("Failed to create code lock.");
         return;
       }
 
