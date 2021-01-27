@@ -253,7 +253,7 @@ namespace Oxide.Plugins
 
       if (settings == null)
       {
-        Interface.Oxide.LogError(string.Format("No settings found for use \"{0}\" - setting should already be loaded.", player.displayName));
+        Interface.Oxide.LogError(string.Format("No settings found for user \"{0}\" - setting should already be loaded.", player.displayName));
         return;
       }
 
