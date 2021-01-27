@@ -41,7 +41,7 @@ Default configuration:
 - `displayPermissionErrors` - If set to false, players won't be notified if
   they don't have the right permissions to use this plugin.
 
-### API
+## API
 
 ```cs
 string GetPlayerCode(BasePlayer player);
