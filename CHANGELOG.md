@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.0.1](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.0.0...v1.0.1) (2021-01-27)
+
+
+### Bug Fixes
+
+* remove unused imports ([cbf4272](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/cbf4272dd6d1af0eedfcdc441696175fa09b8344))
+* typo: use => user ([5229783](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/522978308d1b37a41ea48ab47f30887b345669ea))
+* use "Interface.Oxide.Log*" for logging ([2e11873](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/2e11873a543e58d5cf6b93574feb9bc4d6726029))
+
 # 1.0.0 (2021-01-26)
 
 
