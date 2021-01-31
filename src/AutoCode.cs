@@ -71,16 +71,8 @@ namespace Oxide.Plugins
       Effect.server.Run(codeLock.effectCodeChanged.resourcePath, player.transform.position);
     }
 
-    void OnEntitySpawned(BaseNetworkable entity)
+    void OnEntitySpawned(CodeLock codeLock)
     {
-      // Not a code lock?
-      if (!(entity is CodeLock))
-      {
-        return;
-      }
-
-      CodeLock codeLock = entity as CodeLock;
-
       // Code already set?
       if (codeLock.hasCode)
       {
