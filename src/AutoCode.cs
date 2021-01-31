@@ -130,7 +130,7 @@ namespace Oxide.Plugins
     /**
      * The code chat command.
      */
-    private void ChatCommand(BasePlayer player, string Label, string[] Args)
+    private void ChatCommand(BasePlayer player, string label, string[] args)
     {
       // Allowed to use this command?
       if (!permission.UserHasPermission(player.UserIDString, permissionUse))
@@ -142,9 +142,9 @@ namespace Oxide.Plugins
         return;
       }
 
-      if (Args.Length < 1)
+      if (args.Length < 1)
       {
-        SyntaxErrorChatCommand(player, Label, Args);
+        SyntaxErrorChatCommand(player, label, args);
         return;
       }
 
@@ -154,14 +154,14 @@ namespace Oxide.Plugins
         data.playerCodes.Add(player.userID, new PlayerSettings());
       }
 
-      string arg0 = Args[0].ToLower();
+      string arg0 = args[0].ToLower();
 
       // Pick code.
       if (arg0 == commandPickCode)
       {
-        if (Args.Length > 1)
+        if (args.Length > 1)
         {
-          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), Label));
+          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), label));
           return;
         }
 
@@ -172,9 +172,9 @@ namespace Oxide.Plugins
       // Toggle enabled?
       if (arg0 == commandToggleEnabled)
       {
-        if (Args.Length > 1)
+        if (args.Length > 1)
         {
-          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), Label));
+          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), label));
           return;
         }
 
@@ -185,9 +185,9 @@ namespace Oxide.Plugins
       // Use random code?
       if (arg0 == commandCodeRandom)
       {
-        if (Args.Length > 1)
+        if (args.Length > 1)
         {
-          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), Label));
+          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), label));
           return;
         }
 
@@ -198,9 +198,9 @@ namespace Oxide.Plugins
       // Use given code?
       if (ValidCodeString(arg0))
       {
-        if (Args.Length > 1)
+        if (args.Length > 1)
         {
-          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), Label));
+          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), label));
           return;
         }
 
@@ -208,7 +208,7 @@ namespace Oxide.Plugins
         return;
       }
 
-      SyntaxErrorChatCommand(player, Label, Args);
+      SyntaxErrorChatCommand(player, label, args);
     }
 
     #endregion
@@ -376,12 +376,12 @@ namespace Oxide.Plugins
     /**
      * Notify the player that they entered a syntax error in their "use" chat command.
      */
-    private void SyntaxErrorChatCommand(BasePlayer player, string Label, string[] Args)
+    private void SyntaxErrorChatCommand(BasePlayer player, string label, string[] args)
     {
       player.ChatMessage(
         string.Format(
           lang.GetMessage("SyntaxError", this, player.UserIDString),
-          string.Format("/{0} {1}", Label, HelpGetAllUseCommandArguments())
+          string.Format("/{0} {1}", label, HelpGetAllUseCommandArguments())
         )
       );
     }
