@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.0.2](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.0.1...v1.0.2) (2021-01-31)
+
+
+### Bug Fixes
+
+* fix random codes starting with 0 ([632df49](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/632df4976604e1a1c0e57b9135f5ac0f40c930f2))
+
+
+### Performance Improvements
+
+* use type overloading ([0d52735](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/0d52735eb4b9fa324543dafd21bf5dd2ad0883c4))
+
 ## [1.0.1](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.0.0...v1.0.1) (2021-01-27)
 
 
