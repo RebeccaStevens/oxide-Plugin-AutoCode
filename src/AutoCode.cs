@@ -299,7 +299,7 @@ namespace Oxide.Plugins
      */
     private static string GetRandomCode()
     {
-      return Core.Random.Range(0, 10000).ToString();
+      return Core.Random.Range(0, 10000).ToString("0000");
     }
 
     private void OpenCodeLockUI(BasePlayer player)
