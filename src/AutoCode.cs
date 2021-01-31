@@ -30,6 +30,17 @@ namespace Oxide.Plugins
     void OnServerSave()
     {
       Data.Save();
+      
+      // Remove all temp code locks - we don't want to save them.
+      foreach (CodeLock codeLock in tempCodeLocks.Values)
+      {
+        if (!codeLock.IsDestroyed)
+        {
+          codeLock.Kill();
+        }
+      }
+      tempCodeLocks.Clear();
+      UnsubscribeFromUnneedHooks();
     }
 
     void OnServerShutdown()
