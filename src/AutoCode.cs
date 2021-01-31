@@ -1,4 +1,7 @@
 using Oxide.Core;
+using Oxide.Core.Configuration;
+using Oxide.Core.Libraries;
+using Oxide.Game.Rust.Libraries;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,32 +11,16 @@ namespace Oxide.Plugins
   [Description("Automatically sets the code on code locks placed.")]
   class AutoCode : RustPlugin
   {
-    // Permissions.
-    private const string permissionUse = "autocode.use";
-
-    // Commands.
-    private string commandUse = "code";
-    private string commandPickCode = "pick";
-    private string commandCodeRandom = "random";
-    private string commandToggleEnabled = "toggle";
-
-    // Options
-    private bool displayPermissionErrors = true;
-
-    // Data.
     private readonly Dictionary<BasePlayer, CodeLock> tempCodeLocks = new Dictionary<BasePlayer, CodeLock>();
-    private Data data;
-
-    private bool configChanged = false;
 
     #region Hooks
 
     void Init()
     {
-      LoadConfigValues();
-      data = Interface.Oxide.DataFileSystem.ReadObject<Data>(Name);
-      permission.RegisterPermission(permissionUse, this);
-      cmd.AddChatCommand(commandUse, this, ChatCommand);
+      AutoCodeConfig.Init(this);
+      Data.Init(this);
+      Permissions.Init(this);
+      ChatCommands.Init(this);
     }
 
     protected override void LoadDefaultConfig() {
@@ -42,7 +29,7 @@ namespace Oxide.Plugins
 
     void OnServerSave()
     {
-      SaveData();
+      Data.Save();
     }
 
     void OnServerShutdown()
@@ -52,12 +39,12 @@ namespace Oxide.Plugins
 
     void Unload()
     {
-      SaveData();
+      Data.Save();
     }
 
     void OnCodeEntered(CodeLock codeLock, BasePlayer player, string code)
     {
-      // Note one of our temporary code locks?
+      // Not one of our temporary code locks?
       if (player == null || !tempCodeLocks.ContainsKey(player) || tempCodeLocks[player] != codeLock)
       {
         UnsubscribeFromUnneedHooks();
@@ -82,12 +69,12 @@ namespace Oxide.Plugins
       BasePlayer player = BasePlayer.FindByID(codeLock.OwnerID);
 
       // No player or the player doesn't have permission?
-      if (player == null || !permission.UserHasPermission(player.UserIDString, permissionUse))
+      if (player == null || !Permissions.Oxide.UserHasPermission(player.UserIDString, Permissions.Use))
       {
         return;
       }
 
-      PlayerSettings settings = data.playerCodes[player.userID];
+      Data.Structure.PlayerSettings settings = Data.Inst.playerCodes[player.userID];
 
       // Disabled for the player or they haven't set a code?
       if (settings == null || !settings.enabled || settings.code == null)
@@ -125,94 +112,6 @@ namespace Oxide.Plugins
 
     #endregion
 
-    #region Commands
-
-    /**
-     * The code chat command.
-     */
-    private void ChatCommand(BasePlayer player, string label, string[] args)
-    {
-      // Allowed to use this command?
-      if (!permission.UserHasPermission(player.UserIDString, permissionUse))
-      {
-        if (displayPermissionErrors)
-        {
-          player.ChatMessage(lang.GetMessage("NoPermission", this, player.UserIDString));
-        }
-        return;
-      }
-
-      if (args.Length < 1)
-      {
-        SyntaxErrorChatCommand(player, label, args);
-        return;
-      }
-
-      // Create settings for user if they don't already have any settings.
-      if (!data.playerCodes.ContainsKey(player.userID))
-      {
-        data.playerCodes.Add(player.userID, new PlayerSettings());
-      }
-
-      string arg0 = args[0].ToLower();
-
-      // Pick code.
-      if (arg0 == commandPickCode)
-      {
-        if (args.Length > 1)
-        {
-          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), label));
-          return;
-        }
-
-        OpenCodeLockUI(player);
-        return;
-      }
-
-      // Toggle enabled?
-      if (arg0 == commandToggleEnabled)
-      {
-        if (args.Length > 1)
-        {
-          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), label));
-          return;
-        }
-
-        ToggleEnabled(player);
-        return;
-      }
-
-      // Use random code?
-      if (arg0 == commandCodeRandom)
-      {
-        if (args.Length > 1)
-        {
-          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), label));
-          return;
-        }
-
-        SetCode(player, GetRandomCode());
-        return;
-      }
-
-      // Use given code?
-      if (ValidCodeString(arg0))
-      {
-        if (args.Length > 1)
-        {
-          player.ChatMessage(string.Format(lang.GetMessage("InvalidArgsTooMany", this, player.UserIDString), label));
-          return;
-        }
-
-        SetCode(player, arg0);
-        return;
-      }
-
-      SyntaxErrorChatCommand(player, label, args);
-    }
-
-    #endregion
-
     #region API
 
     /**
@@ -222,9 +121,9 @@ namespace Oxide.Plugins
      */
     public string GetPlayerCode(BasePlayer player)
     {
-      if (data.playerCodes.ContainsKey(player.userID) && data.playerCodes[player.userID].enabled)
+      if (Data.Inst.playerCodes.ContainsKey(player.userID) && Data.Inst.playerCodes[player.userID].enabled)
       {
-        return data.playerCodes[player.userID].code;
+        return Data.Inst.playerCodes[player.userID].code;
       }
 
       return null;
@@ -235,13 +134,13 @@ namespace Oxide.Plugins
      */
     public void SetCode(BasePlayer player, string code)
     {
-      if (!data.playerCodes.ContainsKey(player.userID))
+      if (!Data.Inst.playerCodes.ContainsKey(player.userID))
       {
-        data.playerCodes.Add(player.userID, new PlayerSettings());
+        Data.Inst.playerCodes.Add(player.userID, new Data.Structure.PlayerSettings());
       }
 
       // Load the player's settings
-      PlayerSettings settings = data.playerCodes[player.userID];
+      Data.Structure.PlayerSettings settings = Data.Inst.playerCodes[player.userID];
 
       if (settings == null)
       {
@@ -263,24 +162,14 @@ namespace Oxide.Plugins
      */
     public void ToggleEnabled(BasePlayer player)
     {
-      data.playerCodes[player.userID].enabled = !data.playerCodes[player.userID].enabled;
-      player.ChatMessage(lang.GetMessage(data.playerCodes[player.userID].enabled ? "Enabled" : "Disabled", this, player.UserIDString));
-    }
-
-    #endregion
-
-    /**
-     * Save the data.
-     */
-    private void SaveData()
-    {
-      Interface.Oxide.DataFileSystem.WriteObject(Name, data);
+      Data.Inst.playerCodes[player.userID].enabled = !Data.Inst.playerCodes[player.userID].enabled;
+      player.ChatMessage(lang.GetMessage(Data.Inst.playerCodes[player.userID].enabled ? "Enabled" : "Disabled", this, player.UserIDString));
     }
 
     /**
      * Is the given string a valid code?
      */
-    private bool ValidCodeString(string codeString)
+    public bool ValidCode(string codeString)
     {
       int code;
       if (codeString.Length == 4 && int.TryParse(codeString, out code))
@@ -297,12 +186,12 @@ namespace Oxide.Plugins
     /**
      * Get a random code.
      */
-    private static string GetRandomCode()
+    public static string GetRandomCode()
     {
       return Core.Random.Range(0, 10000).ToString("0000");
     }
 
-    private void OpenCodeLockUI(BasePlayer player)
+    public void OpenCodeLockUI(BasePlayer player)
     {
       // Make sure any old code lock is destroyed.
       DestoryTempCodeLock(player);
@@ -346,7 +235,7 @@ namespace Oxide.Plugins
     /**
      * Destroy the temporary code lock for the given player.
      */
-    private void DestoryTempCodeLock(BasePlayer player)
+    public void DestoryTempCodeLock(BasePlayer player)
     {
       // Code lock for player exists? Remove it.
       if (tempCodeLocks.ContainsKey(player))
@@ -373,98 +262,291 @@ namespace Oxide.Plugins
       }
     }
 
-    /**
-     * Notify the player that they entered a syntax error in their "use" chat command.
-     */
-    private void SyntaxErrorChatCommand(BasePlayer player, string label, string[] args)
-    {
-      player.ChatMessage(
-        string.Format(
-          lang.GetMessage("SyntaxError", this, player.UserIDString),
-          string.Format("/{0} {1}", label, HelpGetAllUseCommandArguments())
-        )
-      );
-    }
+    #endregion
 
     /**
-     * Get all the arguments that can be supplied to the "use" command.
+     * Everything related to permissions.
      */
-    private string HelpGetAllUseCommandArguments()
+    private static class Permissions
     {
-      return string.Format("<{0}>", string.Join("|", new string[] { "1234", commandCodeRandom, commandPickCode, commandToggleEnabled }));
-    }
+      // The plugin.
+      private static AutoCode AutoCode;
 
-    /**
-     * Load config values.
-     */
-    private void LoadConfigValues()
-    {
-      // Plugin options.
-      displayPermissionErrors = GetConfigValue(new string[] { "Options", "displayPermissionErrors" }, displayPermissionErrors);
+      // The oxide permission instance.
+      public static Permission Oxide { private set; get; }
 
-      // Plugin commands.
-      commandUse = GetConfigValue(new string[] { "Commands", "Use" }, commandUse);
+      // Permissions.
+      public static string Use = "autocode.use";
 
-      if (configChanged)
+      public static void Init(AutoCode plugin)
       {
-        SaveConfig();
+        AutoCode = plugin;
+        Oxide = AutoCode.permission;
+        Oxide.RegisterPermission(Use, AutoCode);
       }
     }
 
     /**
-     * Get the config value for the given settings.
+     * Everything related to chat commands.
      */
-    private T GetConfigValue<T>(string[] settingPath, T defaultValue, bool deprecated = false)
+    private static class ChatCommands
     {
-      object value = Config.Get(settingPath);
-      if (value == null)
+      // The plugin.
+      private static AutoCode AutoCode;
+
+      // The rust command instance.
+      public static Command Rust { private set; get; }
+
+      // Commands.
+      public static string Use = "code";
+
+      // Arguments.
+      public static string PickCode = "pick";
+      public static string RandomCode = "random";
+      public static string ToggleEnabled = "toggle";
+
+      public static void Init(AutoCode plugin)
       {
-        if (!deprecated)
+        AutoCode = plugin;
+        Rust = AutoCode.cmd;
+        Rust.AddChatCommand(Use, AutoCode, Handle);
+      }
+
+      /**
+       * The code chat command.
+       */
+      private static void Handle(BasePlayer player, string label, string[] args)
+      {
+        // Allowed to use this command?
+        if (!Permissions.Oxide.UserHasPermission(player.UserIDString, Permissions.Use))
         {
-          SetConfigValue(settingPath, defaultValue);
-          configChanged = true;
+          if (AutoCodeConfig.DisplayPermissionErrors)
+          {
+            player.ChatMessage(AutoCode.lang.GetMessage("NoPermission", AutoCode, player.UserIDString));
+          }
+          return;
         }
-        return defaultValue;
+
+        if (args.Length < 1)
+        {
+          SyntaxError(player, label, args);
+          return;
+        }
+
+        // Create settings for user if they don't already have any settings.
+        if (!Data.Inst.playerCodes.ContainsKey(player.userID))
+        {
+          Data.Inst.playerCodes.Add(player.userID, new Data.Structure.PlayerSettings());
+        }
+
+        string arg0 = args[0].ToLower();
+
+        // Pick code.
+        if (arg0 == PickCode)
+        {
+          if (args.Length > 1)
+          {
+            player.ChatMessage(string.Format(AutoCode.lang.GetMessage("InvalidArgsTooMany", AutoCode, player.UserIDString), label));
+            return;
+          }
+
+          AutoCode.OpenCodeLockUI(player);
+          return;
+        }
+
+        // Toggle enabled?
+        if (arg0 == ToggleEnabled)
+        {
+          if (args.Length > 1)
+          {
+            player.ChatMessage(string.Format(AutoCode.lang.GetMessage("InvalidArgsTooMany", AutoCode, player.UserIDString), label));
+            return;
+          }
+
+          AutoCode.ToggleEnabled(player);
+          return;
+        }
+
+        // Use random code?
+        if (arg0 == RandomCode)
+        {
+          if (args.Length > 1)
+          {
+            player.ChatMessage(string.Format(AutoCode.lang.GetMessage("InvalidArgsTooMany", AutoCode, player.UserIDString), label));
+            return;
+          }
+
+          AutoCode.SetCode(player, GetRandomCode());
+          return;
+        }
+
+        // Use given code?
+        if (AutoCode.ValidCode(arg0))
+        {
+          if (args.Length > 1)
+          {
+            player.ChatMessage(string.Format(AutoCode.lang.GetMessage("InvalidArgsTooMany", AutoCode, player.UserIDString), label));
+            return;
+          }
+
+          AutoCode.SetCode(player, arg0);
+          return;
+        }
+
+        SyntaxError(player, label, args);
       }
 
-      return Config.ConvertValue<T>(value);
-    }
-
-    /**
-     * Set the config value for the given settings.
-     */
-    private void SetConfigValue<T>(string[] settingPath, T newValue, bool saveImmediately = false)
-    {
-      List<object> pathAndTrailingValue = new List<object>();
-      foreach (var segment in settingPath)
+      /**
+       * Notify the player that they entered a syntax error in their "use" chat command.
+       */
+      private static void SyntaxError(BasePlayer player, string label, string[] args)
       {
-        pathAndTrailingValue.Add(segment);
+        player.ChatMessage(
+          string.Format(
+            AutoCode.lang.GetMessage("SyntaxError", AutoCode, player.UserIDString),
+            string.Format("/{0} {1}", label, HelpGetAllUseCommandArguments())
+          )
+        );
       }
-      pathAndTrailingValue.Add(newValue);
 
-      Config.Set(pathAndTrailingValue.ToArray());
-
-      if (saveImmediately)
+      /**
+       * Get all the arguments that can be supplied to the "use" command.
+       */
+      private static string HelpGetAllUseCommandArguments()
       {
-        SaveConfig();
+        return string.Format("<{0}>", string.Join("|", new string[] { "1234", RandomCode, PickCode, ToggleEnabled }));
       }
     }
 
     /**
-     * The data this plugin needs to save.
+     * Everything related to the config.
      */
-    private class Data
+    private static class AutoCodeConfig
     {
-      public Dictionary<ulong, PlayerSettings> playerCodes = new Dictionary<ulong, PlayerSettings>();
+      // The plugin.
+      private static AutoCode AutoCode;
+
+      // The oxide DynamicConfigFile instance.
+      public static DynamicConfigFile OxideConfig { private set; get; }
+
+      // Options.
+      public static bool DisplayPermissionErrors { private set; get; }
+
+      // Meta.
+      private static bool UnsavedChanges = false;
+
+      public static void Init(AutoCode plugin)
+      {
+        AutoCode = plugin;
+        OxideConfig = AutoCode.Config;
+        LoadConfigValues();
+      }
+
+      /**
+       * Save the changes to the config file.
+       */
+      public static void Save(bool force = false)
+      {
+        if (UnsavedChanges || force)
+        {
+          AutoCode.SaveConfig();
+        }
+      }
+
+      /**
+       * Load config values.
+       */
+      public static void LoadConfigValues()
+      {
+        // Options.
+        DisplayPermissionErrors = GetConfigValue(new string[] { "Options", "displayPermissionErrors" }, true);
+
+        // Commands.
+        ChatCommands.Use = GetConfigValue(new string[] { "Commands", "Use" }, ChatCommands.Use);
+
+        Save();
+      }
+
+      /**
+       * Get the config value for the given settings.
+       */
+      private static T GetConfigValue<T>(string[] settingPath, T defaultValue, bool deprecated = false)
+      {
+        object value = OxideConfig.Get(settingPath);
+        if (value == null)
+        {
+          if (!deprecated)
+          {
+            SetConfigValue(settingPath, defaultValue);
+          }
+          return defaultValue;
+        }
+
+        return OxideConfig.ConvertValue<T>(value);
+      }
+
+      /**
+       * Set the config value for the given settings.
+       */
+      private static void SetConfigValue<T>(string[] settingPath, T newValue)
+      {
+        List<object> pathAndTrailingValue = new List<object>();
+        foreach (var segment in settingPath)
+        {
+          pathAndTrailingValue.Add(segment);
+        }
+        pathAndTrailingValue.Add(newValue);
+
+        OxideConfig.Set(pathAndTrailingValue.ToArray());
+        UnsavedChanges = true;
+      }
     }
 
     /**
-     * The settings saved for each player.
+     * Everything related to the data the plugin needs to save.
      */
-    private class PlayerSettings
+    private static class Data
     {
-      public string code = null;
-      public bool enabled = true;
+      // The plugin.
+      private static AutoCode AutoCode;
+
+      // The plugin.
+      private static string Filename;
+
+      // The actual data.
+      public static Structure Inst { private set; get; }
+
+      public static void Init(AutoCode plugin)
+      {
+        AutoCode = plugin;
+        Filename = AutoCode.Name;
+        Inst = Interface.Oxide.DataFileSystem.ReadObject<Structure>(Filename);
+      }
+
+      /**
+       * Save the data.
+       */
+      public static void Save()
+      {
+        Interface.Oxide.DataFileSystem.WriteObject(Filename, Inst);
+      }
+
+      /**
+       * The data this plugin needs to save.
+       */
+      public class Structure
+      {
+        public Dictionary<ulong, PlayerSettings> playerCodes = new Dictionary<ulong, PlayerSettings>();
+
+        /**
+         * The settings saved for each player.
+         */
+        public class PlayerSettings
+        {
+          public string code = null;
+          public bool enabled = true;
+        }
+      }
     }
   }
 }
