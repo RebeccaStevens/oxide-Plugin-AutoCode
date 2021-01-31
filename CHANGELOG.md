@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.0.3](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.0.2...v1.0.3) (2021-01-31)
+
+
+### Bug Fixes
+
+* don't save temp code locks to the map's save file ([de7aed1](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/de7aed14fca7dd0e0f7f1deb0dd41e9ae8844b45))
+
 ## [1.0.2](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.0.1...v1.0.2) (2021-01-31)
 
 
