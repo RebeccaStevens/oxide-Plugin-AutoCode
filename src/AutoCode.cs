@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Oxide.Plugins
 {
   [Info("Auto Code", "slaymaster3000", "0.0.0-development")]
-  [Description("Automatically set the code on code locks you place.")]
+  [Description("Automatically sets the code on code locks placed.")]
   class AutoCode : RustPlugin
   {
     // Permissions.
