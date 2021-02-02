@@ -289,9 +289,17 @@ namespace Oxide.Plugins
     }
 
     /**
-     * Get a random code.
+     * @deprecated Use `Generate` instead.
      */
     public static string GetRandomCode()
+    {
+      return Core.Random.Range(0, 10000).ToString("0000");
+    }
+
+    /**
+     * Get a random code.
+     */
+    public string GenerateRandomCode()
     {
       return Core.Random.Range(0, 10000).ToString("0000");
     }
@@ -599,7 +607,7 @@ namespace Oxide.Plugins
             return;
           }
 
-          AutoCode.SetCode(player, GetRandomCode());
+          AutoCode.SetCode(player, AutoCode.GenerateRandomCode());
           return;
         }
 
