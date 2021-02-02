@@ -233,6 +233,9 @@ namespace Oxide.Plugins
       return Core.Random.Range(0, 10000).ToString("0000");
     }
 
+    /**
+     * Open the code lock UI for the given player.
+     */
     public void OpenCodeLockUI(BasePlayer player)
     {
       // Make sure any old code lock is destroyed.
