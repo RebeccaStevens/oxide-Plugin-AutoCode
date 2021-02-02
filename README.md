@@ -46,7 +46,7 @@ Default configuration:
 ## API
 
 ```cs
-string GetPlayerCode(BasePlayer player);
+string GetCode(BasePlayer player);
 void SetCode(BasePlayer player, string code);
 void ToggleEnabled(BasePlayer player);
 ```

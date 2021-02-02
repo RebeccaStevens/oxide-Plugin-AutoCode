@@ -151,11 +151,16 @@ namespace Oxide.Plugins
     #region API
 
     /**
+     * @deprecated Use `GetCode` instead.
+     */
+    public string GetPlayerCode(BasePlayer player) => GetCode(player);
+
+    /**
      * Get the give player's code.
      *
      * If the player doesn't have a code or they have disabled this functionality, null is returned.
      */
-    public string GetPlayerCode(BasePlayer player)
+    public string GetCode(BasePlayer player)
     {
       if (Data.Inst.playerCodes.ContainsKey(player.userID) && Data.Inst.playerCodes[player.userID].enabled)
       {
