@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+# [1.1.0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.0.3...v1.1.0) (2021-02-02)
+
+
+### Features
+
+* admin console command to remove spam lock outs ([10dc2a4](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/10dc2a42424988ce30576b8f9d31a690f01008b0))
+* allow players to automatically try and unlock locked code locks with their code ([6ac8747](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/6ac8747632ba056e3699ceeb52740b8462c15795))
+* spam prevention ([3d44668](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/3d446686dda601d5993669b9372f0c30c53eb166))
+
 ## [1.0.3](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.0.2...v1.0.3) (2021-01-31)
 
 
