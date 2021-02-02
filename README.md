@@ -21,6 +21,13 @@ Allow players to automatically try and unlock locked code locks with their code.
 - `/code random` - Sets your code to a random code.
 - `/code toggle` - Toggles this plugin on/off for you.
 
+## Console Commands
+
+Only admins can use these.
+
+- `autocode.resetlockout *` - Removes all lock outs for all players.
+- `autocode.resetlockout playerSteamId_or_playerDisplayName` - Removes lock out for the specified player.
+
 ## Configuration
 
 Default configuration:

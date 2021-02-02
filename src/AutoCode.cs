@@ -2,7 +2,9 @@ using Oxide.Core;
 using Oxide.Core.Configuration;
 using Oxide.Core.Libraries;
 using Oxide.Game.Rust.Libraries;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace Oxide.Plugins
@@ -144,6 +146,11 @@ namespace Oxide.Plugins
           { "InvalidArgsTooMany", "No additional arguments expected." },
           { "SyntaxError", "Syntax Error: expected \"{0}\"" },
           { "SpamPrevention", "Too many recent code sets. Please wait {0} and try again." },
+          { "InvalidArguments", "Invalid arguments supplied." },
+          { "ErrorNoPlayerFound", "Error: No player found." },
+          { "ErrorMoreThanOnePlayerFound", "Error: More than one player found." },
+          { "ResettingAllLockOuts", "Resetting lock outs for all players." },
+          { "ResettingLockOut", "Resetting lock outs for {0}." },
         }, this);
     }
 
@@ -352,6 +359,40 @@ namespace Oxide.Plugins
     }
 
     /**
+     * Reset (remove) all lock outs.
+     */
+    public void ResetAllLockOuts()
+    {
+      foreach (ulong userID in Data.Inst.playerCodes.Keys)
+      {
+        ResetLockOut(userID);
+      }
+    }
+
+    /**
+     * Reset (remove) the lock out for the given player.
+     */
+    public void ResetLockOut(BasePlayer player)
+    {
+      ResetLockOut(player.userID);
+    }
+
+    /**
+     * Reset (remove) the lock out for the given user id.
+     */
+    public void ResetLockOut(ulong userID)
+    {
+      if (!Data.Inst.playerCodes.ContainsKey(userID))
+      {
+        return;
+      }
+
+      Data.Structure.PlayerSettings settings = Data.Inst.playerCodes[userID];
+      settings.lockedOutTimes = 0;
+      settings.lockedOutUntil = 0;
+    }
+
+    /**
      * Unsubscribe from things that there is not point currently being subscribed to.
      */
     public void UnsubscribeFromUnneedHooks()
@@ -400,6 +441,9 @@ namespace Oxide.Plugins
       // The rust command instance.
       public static Command Rust { private set; get; }
 
+      // Console Commands.
+      public static string ResetLockOut = "autocode.resetlockout";
+
       // Chat Commands.
       public static string Use = "code";
 
@@ -412,7 +456,83 @@ namespace Oxide.Plugins
       {
         AutoCode = plugin;
         Rust = AutoCode.cmd;
+        Rust.AddConsoleCommand(ResetLockOut, AutoCode, HandleResetLockOut);
         Rust.AddChatCommand(Use, AutoCode, HandleUse);
+      }
+
+      /**
+       * Reset lock out.
+       */
+      private static bool HandleResetLockOut(ConsoleSystem.Arg arg)
+      {
+        BasePlayer player = arg.Player();
+
+        // Not admin?
+        if (!arg.IsAdmin)
+        {
+          if (AutoCodeConfig.DisplayPermissionErrors)
+          {
+            arg.ReplyWith(AutoCode.lang.GetMessage("NoPermission", AutoCode, player?.UserIDString));
+          }
+
+          return false;
+        }
+
+        // Incorrect number of args given.
+        if (!arg.HasArgs(1) || arg.HasArgs(2))
+        {
+          arg.ReplyWith(AutoCode.lang.GetMessage("InvalidArguments", AutoCode, player?.UserIDString));
+          return false;
+        }
+
+        string resetForString = arg.GetString(0).ToLower();
+
+        // Reset all?
+        if (resetForString == "*")
+        {
+          arg.ReplyWith(AutoCode.lang.GetMessage("ResettingAllLockOuts", AutoCode, player?.UserIDString));
+          AutoCode.ResetAllLockOuts();
+          return true;
+        }
+
+        // Find the player to reset for.
+        List<BasePlayer> resetForList = new List<BasePlayer>();
+        foreach (BasePlayer p in BasePlayer.allPlayerList)
+        {
+          if (p == null || string.IsNullOrEmpty(p.displayName))
+          {
+            continue;
+          }
+
+          if (p.UserIDString == resetForString || p.displayName.Contains(resetForString, CompareOptions.OrdinalIgnoreCase))
+          {
+            resetForList.Add(p);
+          }
+        }
+
+        // No player found?
+        if (resetForList.Count == 0)
+        {
+          arg.ReplyWith(AutoCode.lang.GetMessage("ErrorNoPlayerFound", AutoCode, player?.UserIDString));
+          return false;
+        }
+
+        // Too many players found?
+        if (resetForList.Count > 1)
+        {
+          arg.ReplyWith(AutoCode.lang.GetMessage("ErrorMoreThanOnePlayerFound", AutoCode, player?.UserIDString));
+          return false;
+        }
+
+        // Rest for player.
+        arg.ReplyWith(
+          string.Format(
+            AutoCode.lang.GetMessage("ResettingLockOut", AutoCode, player?.UserIDString),
+            resetForList[0].displayName
+          )
+        );
+        AutoCode.ResetLockOut(resetForList[0]);
+        return true;
       }
 
       /**
