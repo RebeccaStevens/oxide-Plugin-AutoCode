@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.1.1](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.1.0...v1.1.1) (2021-02-02)
+
+
+### Bug Fixes
+
+* trying to access data that doesn't exist ([d2e0c53](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/d2e0c53753abb1c994ee4c60c0f49a65ae49ca77))
+
 # [1.1.0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.0.3...v1.1.0) (2021-02-02)
 
 
