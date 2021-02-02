@@ -87,6 +87,12 @@ namespace Oxide.Plugins
         return;
       }
 
+      // No data for player.
+      if (!Data.Inst.playerCodes.ContainsKey(player.userID))
+      {
+        return;
+      }
+
       Data.Structure.PlayerSettings settings = Data.Inst.playerCodes[player.userID];
 
       // Disabled for the player or they haven't set a code?
@@ -117,7 +123,8 @@ namespace Oxide.Plugins
         codeLock.hasCode &&
         codeLock.HasFlag(BaseEntity.Flags.Locked) &&
         Permissions.Oxide.UserHasPermission(player.UserIDString, Permissions.Use) &&
-        Permissions.Oxide.UserHasPermission(player.UserIDString, Permissions.Try)
+        Permissions.Oxide.UserHasPermission(player.UserIDString, Permissions.Try) &&
+        Data.Inst.playerCodes.ContainsKey(player.userID)
       )
       {
         Data.Structure.PlayerSettings settings = Data.Inst.playerCodes[player.userID];
@@ -267,6 +274,12 @@ namespace Oxide.Plugins
      */
     public void ToggleEnabled(BasePlayer player)
     {
+      // Can't toggle until player has done their first enabled.
+      if (!Data.Inst.playerCodes.ContainsKey(player.userID))
+      {
+        return;
+      }
+
       Data.Inst.playerCodes[player.userID].enabled = !Data.Inst.playerCodes[player.userID].enabled;
       player.ChatMessage(lang.GetMessage(Data.Inst.playerCodes[player.userID].enabled ? "Enabled" : "Disabled", this, player.UserIDString));
     }
