@@ -34,21 +34,17 @@ Default configuration:
 
 ```json
 {
-  {
   "Commands": {
     "Use": "code"
   },
   "Options": {
-    "displayPermissionErrors": true,
+    "Display Permission Errors": true,
     "Spam Prevention": {
       "Attempts": 5,
       "Enable": true,
       "Exponential Lock Out Time": true,
-      "Exponential Lockout Time": true,
       "Lock Out Reset Factor": 5.0,
       "Lock Out Time": 5.0,
-      "Lockout Reset Factor": 5.0,
-      "Lockout Time": 5.0,
       "Window Time": 30.0
     }
   }
