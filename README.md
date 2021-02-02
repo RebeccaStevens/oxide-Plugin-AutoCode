@@ -75,6 +75,11 @@ Default configuration:
 string GetCode(BasePlayer player);
 void SetCode(BasePlayer player, string code);
 void ToggleEnabled(BasePlayer player);
+bool ValidCode(string codeString);
+string GenerateRandomCode();
+void OpenCodeLockUI(BasePlayer player);
+void ResetAllLockOuts();
+void ResetLockOut(BasePlayer player);
 ```
 
 ## Development
