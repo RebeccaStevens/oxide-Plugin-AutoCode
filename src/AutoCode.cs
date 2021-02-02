@@ -20,7 +20,7 @@ namespace Oxide.Plugins
       AutoCodeConfig.Init(this);
       Data.Init(this);
       Permissions.Init(this);
-      ChatCommands.Init(this);
+      Commands.Init(this);
     }
 
     protected override void LoadDefaultConfig() {
@@ -334,9 +334,9 @@ namespace Oxide.Plugins
     }
 
     /**
-     * Everything related to chat commands.
+     * Everything related to commands.
      */
-    private static class ChatCommands
+    private static class Commands
     {
       // The plugin.
       private static AutoCode AutoCode;
@@ -344,10 +344,10 @@ namespace Oxide.Plugins
       // The rust command instance.
       public static Command Rust { private set; get; }
 
-      // Commands.
+      // Chat Commands.
       public static string Use = "code";
 
-      // Arguments.
+      // Chat Command Arguments.
       public static string PickCode = "pick";
       public static string RandomCode = "random";
       public static string ToggleEnabled = "toggle";
@@ -356,13 +356,13 @@ namespace Oxide.Plugins
       {
         AutoCode = plugin;
         Rust = AutoCode.cmd;
-        Rust.AddChatCommand(Use, AutoCode, Handle);
+        Rust.AddChatCommand(Use, AutoCode, HandleUse);
       }
 
       /**
-       * The code chat command.
+       * The "use" chat command.
        */
-      private static void Handle(BasePlayer player, string label, string[] args)
+      private static void HandleUse(BasePlayer player, string label, string[] args)
       {
         // Allowed to use this command?
         if (!Permissions.Oxide.UserHasPermission(player.UserIDString, Permissions.Use))
@@ -509,7 +509,7 @@ namespace Oxide.Plugins
         DisplayPermissionErrors = GetConfigValue(new string[] { "Options", "displayPermissionErrors" }, true);
 
         // Commands.
-        ChatCommands.Use = GetConfigValue(new string[] { "Commands", "Use" }, ChatCommands.Use);
+        Commands.Use = GetConfigValue(new string[] { "Commands", "Use" }, Commands.Use);
 
         Save();
       }
