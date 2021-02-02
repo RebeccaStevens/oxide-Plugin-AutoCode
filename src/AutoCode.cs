@@ -698,7 +698,11 @@ namespace Oxide.Plugins
       public static void LoadConfigValues()
       {
         // Options.
-        DisplayPermissionErrors = GetConfigValue(new string[] { "Options", "displayPermissionErrors" }, true);
+        DisplayPermissionErrors = GetConfigValue(
+          new string[] { "Options", "Display Permission Errors" },
+          GetConfigValue(new string[] { "Options", "displayPermissionErrors" }, true, true)
+        );
+        RemoveConfigValue(new string[] { "Options", "displayPermissionErrors" }); // Remove deprecated version.
 
         // Spam prevention.
         SpamPreventionEnabled = GetConfigValue(new string[] { "Options", "Spam Prevention", "Enable" }, true);
@@ -746,6 +750,27 @@ namespace Oxide.Plugins
 
         OxideConfig.Set(pathAndTrailingValue.ToArray());
         UnsavedChanges = true;
+      }
+
+      /**
+       * Remove the config value for the given setting.
+       */
+      private static void RemoveConfigValue(string[] settingPath)
+      {
+        if (settingPath.Length == 1)
+        {
+          OxideConfig.Remove(settingPath[0]);
+          return;
+        }
+
+        List<string> parentPath = new List<string>();
+        for (int i = 0; i < settingPath.Length - 1; i++)
+        {
+          parentPath.Add(settingPath[i]);
+        }
+
+        Dictionary<string, object> parent = OxideConfig.Get(parentPath.ToArray()) as Dictionary<string, object>;
+        parent.Remove(settingPath[settingPath.Length - 1]);
       }
     }
     /**

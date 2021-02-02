@@ -60,7 +60,7 @@ Default configuration:
 - `Commands` - Change the commands this plugin uses.
   - `Use` - Used to set the player's code.
 - `Options`
-  - `displayPermissionErrors` - If set to false, players won't be notified if they don't have the right permissions to use this plugin.
+  - `Display Permission Errors` - If set to false, players won't be notified if they don't have the right permissions to use this plugin.
   - `Spam Prevention` - Prevent players from changing their code too often to prevent abuse.
     - `Enable` - Whether spam protection is enabled or not.
     - `Attempts` - The number of code changes the player can make with in `Window Time` before being marked as spamming.
