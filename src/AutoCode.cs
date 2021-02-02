@@ -143,6 +143,7 @@ namespace Oxide.Plugins
           { "CodeUpdated", "Your new code is {0}." },
           { "InvalidArgsTooMany", "No additional arguments expected." },
           { "SyntaxError", "Syntax Error: expected \"{0}\"" },
+          { "SpamPrevention", "Too many recent code sets. Please wait {0} and try again." },
         }, this);
     }
 
@@ -189,7 +190,62 @@ namespace Oxide.Plugins
         return;
       }
 
+      double currentTime = Utils.CurrentTime();
+
+      if (AutoCodeConfig.SpamPreventionEnabled)
+      {
+        double timePassed = currentTime - settings.lastSet;
+        bool lockedOut = currentTime < settings.lockedOutUntil;
+        double lockOutFor = AutoCodeConfig.SpamLockOutTime * Math.Pow(2, (AutoCodeConfig.SpamLockOutTimeExponential ? settings.lockedOutTimes : 0));
+
+        if (!lockedOut)
+        {
+          // Called again within spam window time?
+          if (timePassed < AutoCodeConfig.SpamWindowTime)
+          {
+            settings.timesSetInSpamWindow++;
+          }
+          else
+          {
+            settings.timesSetInSpamWindow = 1;
+          }
+
+          // Too many recent changes?
+          if (settings.timesSetInSpamWindow > AutoCodeConfig.SpamAttempts)
+          {
+            // Locked them out.
+            settings.lockedOutUntil = currentTime + lockOutFor;
+            settings.lastLockedOut = currentTime;
+            settings.lockedOutTimes++;
+            settings.timesSetInSpamWindow = 0;
+            lockedOut = true;
+          }
+        }
+
+        // Locked out?
+        if (lockedOut)
+        {
+          player.ChatMessage(
+            string.Format(
+              lang.GetMessage("SpamPrevention", this, player.UserIDString),
+              TimeSpan.FromSeconds(Math.Ceiling(settings.lockedOutUntil - currentTime)).ToString(@"d\d\ h\h\ mm\m\ ss\s").TrimStart(' ', 'd', 'h', 'm', 's', '0'),
+              AutoCodeConfig.SpamLockOutTime,
+              AutoCodeConfig.SpamWindowTime
+            )
+          );
+          return;
+        }
+
+        // Haven't been locked out for a long time?
+        if (currentTime > settings.lastLockedOut + AutoCodeConfig.SpamLockOutResetFactor * lockOutFor)
+        {
+          // Reset their lockOuts.
+          settings.lockedOutTimes = 0;
+        }
+      }
+
       settings.code = code;
+      settings.lastSet = currentTime;
 
       player.ChatMessage(
         string.Format(
@@ -479,6 +535,14 @@ namespace Oxide.Plugins
       // Options.
       public static bool DisplayPermissionErrors { private set; get; }
 
+      // Spam prevention.
+      public static bool SpamPreventionEnabled { private set; get; }
+      public static int SpamAttempts { private set; get; }
+      public static double SpamLockOutTime { private set; get; }
+      public static double SpamWindowTime { private set; get; }
+      public static bool SpamLockOutTimeExponential { private set; get; }
+      public static double SpamLockOutResetFactor { private set; get; }
+
       // Meta.
       private static bool UnsavedChanges = false;
 
@@ -507,6 +571,14 @@ namespace Oxide.Plugins
       {
         // Options.
         DisplayPermissionErrors = GetConfigValue(new string[] { "Options", "displayPermissionErrors" }, true);
+
+        // Spam prevention.
+        SpamPreventionEnabled = GetConfigValue(new string[] { "Options", "Spam Prevention", "Enable" }, true);
+        SpamAttempts = GetConfigValue(new string[] { "Options", "Spam Prevention", "Attempts" }, 5);
+        SpamLockOutTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Time" }, 5.0);
+        SpamWindowTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Window Time" }, 30.0);
+        SpamLockOutTimeExponential = GetConfigValue(new string[] { "Options", "Spam Prevention", "Exponential Lock Out Time" }, true);
+        SpamLockOutResetFactor = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Reset Factor" }, 5.0);
 
         // Commands.
         Commands.Use = GetConfigValue(new string[] { "Commands", "Use" }, Commands.Use);
@@ -547,6 +619,13 @@ namespace Oxide.Plugins
         OxideConfig.Set(pathAndTrailingValue.ToArray());
         UnsavedChanges = true;
       }
+    }
+    /**
+     * Utility functions.
+     */
+    private static class Utils
+    {
+      public static double CurrentTime() => DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
     }
 
     /**
@@ -592,6 +671,11 @@ namespace Oxide.Plugins
         {
           public string code = null;
           public bool enabled = true;
+          public double lastSet = 0;
+          public int timesSetInSpamWindow = 0;
+          public double lockedOutUntil = 0;
+          public double lastLockedOut = 0;
+          public int lockedOutTimes = 0;
         }
       }
     }
