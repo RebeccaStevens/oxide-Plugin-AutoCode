@@ -30,7 +30,7 @@ namespace Oxide.Plugins
     void OnServerSave()
     {
       Data.Save();
-      
+
       // Remove all temp code locks - we don't want to save them.
       foreach (CodeLock codeLock in tempCodeLocks.Values)
       {
@@ -136,13 +136,13 @@ namespace Oxide.Plugins
     {
       lang.RegisterMessages(new Dictionary<string, string>
         {
-          {"NoPermission", "You don't have permission." },
-          {"Enabled", "Auto Code enabled."},
-          {"Disabled", "Auto Code disabled."},
-          {"CodeAutoLocked", "Code lock placed with code {0}." },
-          {"CodeUpdated", "Your new code is {0}." },
-          {"InvalidArgsTooMany", "No additional arguments expected." },
-          {"SyntaxError", "Syntax Error: expected \"{0}\"" },
+          { "NoPermission", "You don't have permission." },
+          { "Enabled", "Auto Code enabled." },
+          { "Disabled", "Auto Code disabled." },
+          { "CodeAutoLocked", "Code lock placed with code {0}." },
+          { "CodeUpdated", "Your new code is {0}." },
+          { "InvalidArgsTooMany", "No additional arguments expected." },
+          { "SyntaxError", "Syntax Error: expected \"{0}\"" },
         }, this);
     }
 
@@ -189,7 +189,8 @@ namespace Oxide.Plugins
       player.ChatMessage(
         string.Format(
           lang.GetMessage("CodeUpdated", this, player.UserIDString),
-          player.net.connection.info.GetBool("global.streamermode") ? "****" : code)
+          player.net.connection.info.GetBool("global.streamermode") ? "****" : code
+        )
       );
     }
 
@@ -588,4 +589,3 @@ namespace Oxide.Plugins
     }
   }
 }
-
