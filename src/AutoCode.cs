@@ -107,6 +107,31 @@ namespace Oxide.Plugins
       );
     }
 
+    object CanUseLockedEntity(BasePlayer player, CodeLock codeLock)
+    {
+      // Is a player that has permission and lock is locked?
+      if (
+        player != null &&
+        codeLock.hasCode &&
+        codeLock.HasFlag(BaseEntity.Flags.Locked) &&
+        Permissions.Oxide.UserHasPermission(player.UserIDString, Permissions.Use) &&
+        Permissions.Oxide.UserHasPermission(player.UserIDString, Permissions.Try)
+      )
+      {
+        Data.Structure.PlayerSettings settings = Data.Inst.playerCodes[player.userID];
+
+        // Player has plugin enabled and they have the code?
+        if (settings != null && settings.enabled && codeLock.code == settings.code)
+        {
+          // Auth the player.
+          codeLock.whitelistPlayers.Add(player.userID);
+        }
+      }
+
+      // Use default behavior.
+      return null;
+    }
+
     protected override void LoadDefaultMessages()
     {
       lang.RegisterMessages(new Dictionary<string, string>
@@ -288,12 +313,14 @@ namespace Oxide.Plugins
 
       // Permissions.
       public static string Use = "autocode.use";
+      public static string Try = "autocode.try";
 
       public static void Init(AutoCode plugin)
       {
         AutoCode = plugin;
         Oxide = AutoCode.permission;
         Oxide.RegisterPermission(Use, AutoCode);
+        Oxide.RegisterPermission(Try, AutoCode);
       }
     }
 

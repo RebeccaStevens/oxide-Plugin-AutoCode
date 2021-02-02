@@ -1,6 +1,7 @@
 # AutoCode
 
-Automatically sets the code on code locks placed.
+Automatically sets the code on code locks placed.  
+Allow players to automatically try and unlock locked code locks with their code.
 
 [![BSD 3 Clause license](https://img.shields.io/github/license/RebeccaStevens/eslint-config-rebeccastevens.svg?style=flat-square)](https://opensource.org/licenses/BSD-3-Clause)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)](https://commitizen.github.io/cz-cli/)
@@ -9,6 +10,7 @@ Automatically sets the code on code locks placed.
 ## Permissions
 
 - `autocode.use` - Allows use of this plugin.
+- `autocode.try` - Allows auto-trying of user code on locked code locks.
 
 ## Chat Commands
 
