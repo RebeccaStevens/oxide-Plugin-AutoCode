@@ -75,7 +75,7 @@ Default configuration:
 string GetCode(BasePlayer player);
 void SetCode(BasePlayer player, string code, bool guest = false);
 void RemoveCode(BasePlayer player, bool guest = false);
-bool ValidCode(string codeString);
+bool IsValidCode(string codeString);
 string GenerateRandomCode();
 void OpenCodeLockUI(BasePlayer player, bool guest = false);
 void ResetAllLockOuts();
