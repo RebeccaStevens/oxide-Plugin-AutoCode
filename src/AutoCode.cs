@@ -175,7 +175,7 @@ namespace Oxide.Plugins
           { "GuestCodeUpdated", "Your new guest code is {0}." },
           { "CodeRemoved", "Your code has been removed." },
           { "GuestCodeRemoved", "Your guest code has been removed." },
-          { "InvalidArgsTooMany", "No additional arguments expected." },
+          { "InvalidArgsTooMany", "Too many arguments supplied." },
           { "Info", "Code: {0}\nGuest Code: {1}\n\nUsage: {2}" },
           { "NotSet", "Not set." },
           { "SyntaxError", "Syntax Error: expected command in the form:\n{0}" },
