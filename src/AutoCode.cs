@@ -172,6 +172,8 @@ namespace Oxide.Plugins
           { "CodeRemoved", "You're code has been removed." },
           { "GuestCodeRemoved", "You're guest code has been removed." },
           { "InvalidArgsTooMany", "No additional arguments expected." },
+          { "Info", "Code: {0}\nGuest Code: {1}\n\nUsage: {2}" },
+          { "NotSet", "Not set." },
           { "SyntaxError", "Syntax Error: expected command in the form:\n{0}" },
           { "SpamPrevention", "Too many recent code sets. Please wait {0} and try again." },
           { "InvalidArguments", "Invalid arguments supplied." },
@@ -852,9 +854,9 @@ namespace Oxide.Plugins
           return;
         }
 
-        if (args.Length < 1)
+        if (args.Length == 0)
         {
-          SyntaxError(player, label, args);
+          ShowInfo(player, label, args);
           return;
         }
 
@@ -937,6 +939,38 @@ namespace Oxide.Plugins
       }
 
       /// <summary>
+      /// Show the player their info.
+      /// </summary>
+      private void ShowInfo(BasePlayer player, string label, string[] args)
+      {
+        string code = null;
+        string guestCode = null;
+
+        if (plugin.data.Inst.playerSettings.ContainsKey(player.userID))
+        {
+          Data.Structure.PlayerSettings settings = plugin.data.Inst.playerSettings[player.userID];
+          code = settings.code;
+          guestCode = settings.guestCode;
+
+          // Hide codes for those in streamer mode.
+          if (player.net.connection.info.GetBool("global.streamermode"))
+          {
+            code = code == null ? null : "****";
+            guestCode = guestCode == null ? null : "****";
+          }
+        }
+
+        player.ChatMessage(
+          string.Format(
+            plugin.lang.GetMessage("Info", plugin, player.UserIDString),
+            code ?? plugin.lang.GetMessage("NotSet", plugin, player.UserIDString),
+            guestCode ?? plugin.lang.GetMessage("NotSet", plugin, player.UserIDString),
+            UsageInfo(label)
+          )
+        );
+      }
+
+      /// <summary>
       /// Notify the player that they entered a syntax error in their "use" chat command.
       /// </summary>
       private void SyntaxError(BasePlayer player, string label, string[] args)
@@ -944,9 +978,18 @@ namespace Oxide.Plugins
         player.ChatMessage(
           string.Format(
             plugin.lang.GetMessage("SyntaxError", plugin, player.UserIDString),
-            string.Format("/{0} {1}", label, HelpGetAllUseCommandArguments())
+            UsageInfo(label)
           )
         );
+      }
+
+      /// <summary>
+      /// Show how to use the "use" command.
+      /// </summary>
+      /// <returns></returns>
+      private string UsageInfo(string label)
+      {
+        return string.Format("/{0} {1}", label, HelpGetAllUseCommandArguments());
       }
 
       /// <summary>
