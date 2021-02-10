@@ -19,7 +19,7 @@ Allow players to automatically try and unlock locked code locks with their code.
 - `/code 1234` - Sets your code to 1234.
 - `/code pick` - Opens the code lock input for you to enter a code.
 - `/code random` - Sets your code to a random code.
-- `/code toggle` - Toggles this plugin on/off for you.
+- `/code remove` - Removes your set code.
 
 ## Console Commands
 
