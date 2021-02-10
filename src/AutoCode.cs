@@ -127,12 +127,16 @@ namespace Oxide.Plugins
       // Lock the lock.
       codeLock.SetFlag(BaseEntity.Flags.Locked, true);
 
-      player.ChatMessage(
-        string.Format(
-          lang.GetMessage("CodeAutoLocked", this, player.UserIDString),
-          player.net.connection.info.GetBool("global.streamermode") ? "****" : settings.code
-        )
-      );
+      // Don't display code if in streamer mode.
+      if (!player.net.connection.info.GetBool("global.streamermode"))
+      {
+        player.ChatMessage(
+          string.Format(
+            lang.GetMessage("CodeAutoLocked", this, player.UserIDString),
+            settings.code
+          )
+        );
+      }
     }
 
     object CanUseLockedEntity(BasePlayer player, CodeLock codeLock)
@@ -293,12 +297,16 @@ namespace Oxide.Plugins
 
       settings.lastSet = currentTime;
 
-      player.ChatMessage(
-        string.Format(
-          lang.GetMessage(guest ? "GuestCodeUpdated" : "CodeUpdated", this, player.UserIDString),
-          player.net.connection.info.GetBool("global.streamermode") ? "****" : code
-        )
-      );
+      // Don't display code if in streamer mode.
+      if (!player.net.connection.info.GetBool("global.streamermode"))
+      {
+        player.ChatMessage(
+          string.Format(
+            lang.GetMessage(guest ? "GuestCodeUpdated" : "CodeUpdated", this, player.UserIDString),
+            code
+          )
+        );
+      }
     }
 
     /// <summary>
