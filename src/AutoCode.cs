@@ -375,25 +375,6 @@ namespace Oxide.Plugins
     }
 
     /// <summary>
-    /// Destroy the temporary code lock for the given player.
-    /// </summary>
-    /// <param name="player"></param>
-    public void DestoryTempCodeLock(BasePlayer player)
-    {
-      // Code lock for player exists? Remove it.
-      if (tempCodeLocks.ContainsKey(player))
-      {
-        // Code lock exists? Destroy it.
-        if (!tempCodeLocks[player].IsDestroyed)
-        {
-          tempCodeLocks[player].Kill();
-        }
-        tempCodeLocks.Remove(player);
-      }
-      UnsubscribeFromUnneedHooks();
-    }
-
-    /// <summary>
     /// Reset (remove) all lock outs caused by spam protection.
     /// </summary>
     public void ResetAllLockOuts()
@@ -430,6 +411,27 @@ namespace Oxide.Plugins
       settings.lockedOutUntil = 0;
     }
 
+    #endregion
+
+    /// <summary>
+    /// Destroy the temporary code lock for the given player.
+    /// </summary>
+    /// <param name="player"></param>
+    public void DestoryTempCodeLock(BasePlayer player)
+    {
+      // Code lock for player exists? Remove it.
+      if (tempCodeLocks.ContainsKey(player))
+      {
+        // Code lock exists? Destroy it.
+        if (!tempCodeLocks[player].IsDestroyed)
+        {
+          tempCodeLocks[player].Kill();
+        }
+        tempCodeLocks.Remove(player);
+      }
+      UnsubscribeFromUnneedHooks();
+    }
+
     /// <summary>
     /// Unsubscribe from things that there is not point currently being subscribed to.
     /// </summary>
@@ -442,7 +444,188 @@ namespace Oxide.Plugins
       }
     }
 
-    #endregion
+    /// <summary>
+    /// Everything related to the config.
+    /// </summary>
+    private class AutoCodeConfig
+    {
+      // The plugin.
+      private readonly AutoCode AutoCode;
+
+      // The oxide DynamicConfigFile instance.
+      public readonly DynamicConfigFile OxideConfig;
+
+      // Options.
+      public bool DisplayPermissionErrors { private set; get; }
+
+      // Spam prevention.
+      public bool SpamPreventionEnabled { private set; get; }
+      public int SpamAttempts { private set; get; }
+      public double SpamLockOutTime { private set; get; }
+      public double SpamWindowTime { private set; get; }
+      public bool SpamLockOutTimeExponential { private set; get; }
+      public double SpamLockOutResetFactor { private set; get; }
+
+      // Meta.
+      private bool UnsavedChanges = false;
+
+      public AutoCodeConfig(AutoCode plugin)
+      {
+        AutoCode = plugin;
+        OxideConfig = AutoCode.Config;
+      }
+
+      /// <summary>
+      /// Save the changes to the config file.
+      /// </summary>
+      public void Save(bool force = false)
+      {
+        if (UnsavedChanges || force)
+        {
+          AutoCode.SaveConfig();
+        }
+      }
+
+      /// <summary>
+      /// Load config values.
+      /// </summary>
+      public void Load()
+      {
+        // Options.
+        DisplayPermissionErrors = GetConfigValue(
+          new string[] { "Options", "Display Permission Errors" },
+          GetConfigValue(new string[] { "Options", "displayPermissionErrors" }, true, true)
+        );
+        RemoveConfigValue(new string[] { "Options", "displayPermissionErrors" }); // Remove deprecated version.
+
+        // Spam prevention.
+        SpamPreventionEnabled = GetConfigValue(new string[] { "Options", "Spam Prevention", "Enable" }, true);
+        SpamAttempts = GetConfigValue(new string[] { "Options", "Spam Prevention", "Attempts" }, 5);
+        SpamLockOutTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Time" }, 5.0);
+        SpamWindowTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Window Time" }, 30.0);
+        SpamLockOutTimeExponential = GetConfigValue(new string[] { "Options", "Spam Prevention", "Exponential Lock Out Time" }, true);
+        SpamLockOutResetFactor = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Reset Factor" }, 5.0);
+
+        // Commands.
+        AutoCode.commands.Use = GetConfigValue(new string[] { "Commands", "Use" }, AutoCode.commands.Use);
+
+        Save();
+      }
+
+      /// <summary>
+      /// Get the config value for the given settings.
+      /// </summary>
+      private T GetConfigValue<T>(string[] settingPath, T defaultValue, bool deprecated = false)
+      {
+        object value = OxideConfig.Get(settingPath);
+        if (value == null)
+        {
+          if (!deprecated)
+          {
+            SetConfigValue(settingPath, defaultValue);
+          }
+          return defaultValue;
+        }
+
+        return OxideConfig.ConvertValue<T>(value);
+      }
+
+      /// <summary>
+      /// Set the config value for the given settings.
+      /// </summary>
+      private void SetConfigValue<T>(string[] settingPath, T newValue)
+      {
+        List<object> pathAndTrailingValue = new List<object>();
+        foreach (var segment in settingPath)
+        {
+          pathAndTrailingValue.Add(segment);
+        }
+        pathAndTrailingValue.Add(newValue);
+
+        OxideConfig.Set(pathAndTrailingValue.ToArray());
+        UnsavedChanges = true;
+      }
+
+      /// <summary>
+      /// Remove the config value for the given setting.
+      /// </summary>
+      private void RemoveConfigValue(string[] settingPath)
+      {
+        if (settingPath.Length == 1)
+        {
+          OxideConfig.Remove(settingPath[0]);
+          return;
+        }
+
+        List<string> parentPath = new List<string>();
+        for (int i = 0; i < settingPath.Length - 1; i++)
+        {
+          parentPath.Add(settingPath[i]);
+        }
+
+        Dictionary<string, object> parent = OxideConfig.Get(parentPath.ToArray()) as Dictionary<string, object>;
+        parent.Remove(settingPath[settingPath.Length - 1]);
+      }
+    }
+
+    /// <summary>
+    /// Everything related to the data the plugin needs to save.
+    /// </summary>
+    private class Data
+    {
+      // The plugin.
+      private readonly AutoCode AutoCode;
+
+      // The plugin.
+      private readonly string Filename;
+
+      // The actual data.
+      public Structure Inst { private set; get; }
+
+      public Data(AutoCode plugin)
+      {
+        AutoCode = plugin;
+        Filename = AutoCode.Name;
+      }
+
+      /// <summary>
+      /// Save the data.
+      /// </summary>
+      public void Save()
+      {
+        Interface.Oxide.DataFileSystem.WriteObject(Filename, Inst);
+      }
+
+      /// <summary>
+      /// Load the data.
+      /// </summary>
+      public void Load()
+      {
+        Inst = Interface.Oxide.DataFileSystem.ReadObject<Structure>(Filename);
+      }
+
+      /// <summary>
+      /// The data this plugin needs to save.
+      /// </summary>
+      public class Structure
+      {
+        public Dictionary<ulong, PlayerSettings> playerCodes = new Dictionary<ulong, PlayerSettings>();
+
+        /// <summary>
+        /// The settings saved for each player.
+        /// </summary>
+        public class PlayerSettings
+        {
+          public string code = null;
+          public bool enabled = true;
+          public double lastSet = 0;
+          public int timesSetInSpamWindow = 0;
+          public double lockedOutUntil = 0;
+          public double lastLockedOut = 0;
+          public int lockedOutTimes = 0;
+        }
+      }
+    }
 
     /// <summary>
     /// The permissions this plugin uses.
@@ -696,130 +879,6 @@ namespace Oxide.Plugins
     }
 
     /// <summary>
-    /// Everything related to the config.
-    /// </summary>
-    private class AutoCodeConfig
-    {
-      // The plugin.
-      private readonly AutoCode AutoCode;
-
-      // The oxide DynamicConfigFile instance.
-      public readonly DynamicConfigFile OxideConfig;
-
-      // Options.
-      public bool DisplayPermissionErrors { private set; get; }
-
-      // Spam prevention.
-      public bool SpamPreventionEnabled { private set; get; }
-      public int SpamAttempts { private set; get; }
-      public double SpamLockOutTime { private set; get; }
-      public double SpamWindowTime { private set; get; }
-      public bool SpamLockOutTimeExponential { private set; get; }
-      public double SpamLockOutResetFactor { private set; get; }
-
-      // Meta.
-      private bool UnsavedChanges = false;
-
-      public AutoCodeConfig(AutoCode plugin)
-      {
-        AutoCode = plugin;
-        OxideConfig = AutoCode.Config;
-      }
-
-      /// <summary>
-      /// Save the changes to the config file.
-      /// </summary>
-      public void Save(bool force = false)
-      {
-        if (UnsavedChanges || force)
-        {
-          AutoCode.SaveConfig();
-        }
-      }
-
-      /// <summary>
-      /// Load config values.
-      /// </summary>
-      public void Load()
-      {
-        // Options.
-        DisplayPermissionErrors = GetConfigValue(
-          new string[] { "Options", "Display Permission Errors" },
-          GetConfigValue(new string[] { "Options", "displayPermissionErrors" }, true, true)
-        );
-        RemoveConfigValue(new string[] { "Options", "displayPermissionErrors" }); // Remove deprecated version.
-
-        // Spam prevention.
-        SpamPreventionEnabled = GetConfigValue(new string[] { "Options", "Spam Prevention", "Enable" }, true);
-        SpamAttempts = GetConfigValue(new string[] { "Options", "Spam Prevention", "Attempts" }, 5);
-        SpamLockOutTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Time" }, 5.0);
-        SpamWindowTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Window Time" }, 30.0);
-        SpamLockOutTimeExponential = GetConfigValue(new string[] { "Options", "Spam Prevention", "Exponential Lock Out Time" }, true);
-        SpamLockOutResetFactor = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Reset Factor" }, 5.0);
-
-        // Commands.
-        AutoCode.commands.Use = GetConfigValue(new string[] { "Commands", "Use" }, AutoCode.commands.Use);
-
-        Save();
-      }
-
-      /// <summary>
-      /// Get the config value for the given settings.
-      /// </summary>
-      private T GetConfigValue<T>(string[] settingPath, T defaultValue, bool deprecated = false)
-      {
-        object value = OxideConfig.Get(settingPath);
-        if (value == null)
-        {
-          if (!deprecated)
-          {
-            SetConfigValue(settingPath, defaultValue);
-          }
-          return defaultValue;
-        }
-
-        return OxideConfig.ConvertValue<T>(value);
-      }
-
-      /// <summary>
-      /// Set the config value for the given settings.
-      /// </summary>
-      private void SetConfigValue<T>(string[] settingPath, T newValue)
-      {
-        List<object> pathAndTrailingValue = new List<object>();
-        foreach (var segment in settingPath)
-        {
-          pathAndTrailingValue.Add(segment);
-        }
-        pathAndTrailingValue.Add(newValue);
-
-        OxideConfig.Set(pathAndTrailingValue.ToArray());
-        UnsavedChanges = true;
-      }
-
-      /// <summary>
-      /// Remove the config value for the given setting.
-      /// </summary>
-      private void RemoveConfigValue(string[] settingPath)
-      {
-        if (settingPath.Length == 1)
-        {
-          OxideConfig.Remove(settingPath[0]);
-          return;
-        }
-
-        List<string> parentPath = new List<string>();
-        for (int i = 0; i < settingPath.Length - 1; i++)
-        {
-          parentPath.Add(settingPath[i]);
-        }
-
-        Dictionary<string, object> parent = OxideConfig.Get(parentPath.ToArray()) as Dictionary<string, object>;
-        parent.Remove(settingPath[settingPath.Length - 1]);
-      }
-    }
-
-    /// <summary>
     /// Utility functions.
     /// </summary>
     private static class Utils
@@ -829,65 +888,6 @@ namespace Oxide.Plugins
       /// </summary>
       /// <returns>The number of seconds that have passed since 1970-01-01.</returns>
       public static double CurrentTime() => DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
-    }
-
-    /// <summary>
-    /// Everything related to the data the plugin needs to save.
-    /// </summary>
-    private class Data
-    {
-      // The plugin.
-      private readonly AutoCode AutoCode;
-
-      // The plugin.
-      private readonly string Filename;
-
-      // The actual data.
-      public Structure Inst { private set; get; }
-
-      public Data(AutoCode plugin)
-      {
-        AutoCode = plugin;
-        Filename = AutoCode.Name;
-      }
-
-      /// <summary>
-      /// Save the data.
-      /// </summary>
-      public void Save()
-      {
-        Interface.Oxide.DataFileSystem.WriteObject(Filename, Inst);
-      }
-
-      /// <summary>
-      /// Load the data.
-      /// </summary>
-      public void Load()
-      {
-        Inst = Interface.Oxide.DataFileSystem.ReadObject<Structure>(Filename);
-      }
-
-      /// <summary>
-      /// The data this plugin needs to save.
-      /// </summary>
-      public class Structure
-      {
-        public Dictionary<ulong, PlayerSettings> playerCodes = new Dictionary<ulong, PlayerSettings>();
-
-        /// <summary>
-        /// The settings saved for each player.
-        /// </summary>
-        public class PlayerSettings
-        {
-          public string code = null;
-          public bool enabled = true;
-          public double lastSet = 0;
-          public int timesSetInSpamWindow = 0;
-          public double lockedOutUntil = 0;
-          public double lastLockedOut = 0;
-          public int lockedOutTimes = 0;
-        }
-      }
     }
   }
 }
