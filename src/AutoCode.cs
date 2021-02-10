@@ -175,16 +175,14 @@ namespace Oxide.Plugins
 
     #region API
 
-    /**
-     * @deprecated Use `GetCode` instead.
-     */
+    [ObsoleteAttribute("This method is deprecated. Call GetCode instead.", false)]
     public string GetPlayerCode(BasePlayer player) => GetCode(player);
 
-    /**
-     * Get the give player's code.
-     *
-     * If the player doesn't have a code or they have disabled this functionality, null is returned.
-     */
+    /// <summary>
+    /// Get the code for the given player.
+    /// </summary>
+    /// <param name="player">The player to get the code for.</param>
+    /// <returns>A string of the player's code or null if the player doesn't have a code or they have disabled this plugin.</returns>
     public string GetCode(BasePlayer player)
     {
       if (data.Inst.playerCodes.ContainsKey(player.userID) && data.Inst.playerCodes[player.userID].enabled)
@@ -195,9 +193,11 @@ namespace Oxide.Plugins
       return null;
     }
 
-    /**
-     * Set the code for the given player.
-     */
+    /// <summary>
+    /// Set the code for the given player.
+    /// </summary>
+    /// <param name="player">The player to set the code for.</param>
+    /// <param name="code">The code to set for the given player.</param>
     public void SetCode(BasePlayer player, string code)
     {
       if (!data.Inst.playerCodes.ContainsKey(player.userID))
@@ -279,9 +279,10 @@ namespace Oxide.Plugins
       );
     }
 
-    /**
-     * Toggle enabled for the given player.
-     */
+    /// <summary>
+    /// Toggle enabled for the given player.
+    /// </summary>
+    /// <param name="player">The player to toggle this plugin for.</param>
     public void ToggleEnabled(BasePlayer player)
     {
       // Can't toggle until player has done their first enabled.
@@ -294,9 +295,11 @@ namespace Oxide.Plugins
       player.ChatMessage(lang.GetMessage(data.Inst.playerCodes[player.userID].enabled ? "Enabled" : "Disabled", this, player.UserIDString));
     }
 
-    /**
-     * Is the given string a valid code?
-     */
+    /// <summary>
+    /// Is the given string a valid code?
+    /// </summary>
+    /// <param name="code">The code to test.</param>
+    /// <returns>True if it's valid, otherwise false.</returns>
     public bool ValidCode(string codeString)
     {
       int code;
@@ -311,25 +314,25 @@ namespace Oxide.Plugins
       return false;
     }
 
-    /**
-     * @deprecated Use `GenerateRandomCode` instead.
-     */
+    [ObsoleteAttribute("This method is deprecated. Call GenerateRandomCode instead.", false)]
     public static string GetRandomCode()
     {
       return Core.Random.Range(0, 10000).ToString("0000");
     }
 
-    /**
-     * Get a random code.
-     */
+    /// <summary>
+    /// Generate a random code.
+    /// </summary>
+    /// <returns></returns>
     public string GenerateRandomCode()
     {
       return Core.Random.Range(0, 10000).ToString("0000");
     }
 
-    /**
-     * Open the code lock UI for the given player.
-     */
+    /// <summary>
+    /// Open the code lock UI for the given player.
+    /// </summary>
+    /// <param name="player">The player to open the lock UI for.</param>
     public void OpenCodeLockUI(BasePlayer player)
     {
       // Make sure any old code lock is destroyed.
@@ -371,9 +374,10 @@ namespace Oxide.Plugins
       });
     }
 
-    /**
-     * Destroy the temporary code lock for the given player.
-     */
+    /// <summary>
+    /// Destroy the temporary code lock for the given player.
+    /// </summary>
+    /// <param name="player"></param>
     public void DestoryTempCodeLock(BasePlayer player)
     {
       // Code lock for player exists? Remove it.
@@ -389,9 +393,9 @@ namespace Oxide.Plugins
       UnsubscribeFromUnneedHooks();
     }
 
-    /**
-     * Reset (remove) all lock outs.
-     */
+    /// <summary>
+    /// Reset (remove) all lock outs caused by spam protection.
+    /// </summary>
     public void ResetAllLockOuts()
     {
       foreach (ulong userID in data.Inst.playerCodes.Keys)
@@ -400,17 +404,20 @@ namespace Oxide.Plugins
       }
     }
 
-    /**
-     * Reset (remove) the lock out for the given player.
-     */
+
+    /// <summary>
+    /// Reset (remove) the lock out caused by spam protection for the given player.
+    /// </summary>
+    /// <param name="player"></param>
     public void ResetLockOut(BasePlayer player)
     {
       ResetLockOut(player.userID);
     }
 
-    /**
-     * Reset (remove) the lock out for the given user id.
-     */
+    /// <summary>
+    /// Reset (remove) the lock out caused by spam protection for the given user id.
+    /// </summary>
+    /// <param name="userID"></param>
     public void ResetLockOut(ulong userID)
     {
       if (!data.Inst.playerCodes.ContainsKey(userID))
@@ -423,9 +430,9 @@ namespace Oxide.Plugins
       settings.lockedOutUntil = 0;
     }
 
-    /**
-     * Unsubscribe from things that there is not point currently being subscribed to.
-     */
+    /// <summary>
+    /// Unsubscribe from things that there is not point currently being subscribed to.
+    /// </summary>
     public void UnsubscribeFromUnneedHooks()
     {
       // No point listing for code lock codes if we aren't expecting any.
@@ -437,9 +444,9 @@ namespace Oxide.Plugins
 
     #endregion
 
-    /**
-     * Everything related to permissions.
-     */
+    /// <summary>
+    /// The permissions this plugin uses.
+    /// </summary>
     private class Permissions
     {
       // The plugin.
@@ -458,9 +465,9 @@ namespace Oxide.Plugins
         Oxide = AutoCode.permission;
       }
 
-      /**
-       * Register the permissions.
-       */
+      /// <summary>
+      /// Register the permissions.
+      /// </summary>
       public void Register()
       {
         Oxide.RegisterPermission(Use, AutoCode);
@@ -468,10 +475,10 @@ namespace Oxide.Plugins
       }
     }
 
-    /**
-     * Everything related to commands.
-     */
-      private class Commands
+    /// <summary>
+    /// Everything related to commands.
+    /// </summary>
+    private class Commands
     {
       // The plugin.
       private readonly AutoCode AutoCode;
@@ -496,18 +503,19 @@ namespace Oxide.Plugins
         Rust = AutoCode.cmd;
       }
 
-      /**
-       * Register the commands.
-       */
+      /// <summary>
+      /// Register this command.
+      /// </summary>
       public void Register()
       {
         Rust.AddConsoleCommand(ResetLockOut, AutoCode, HandleResetLockOut);
         Rust.AddChatCommand(Use, AutoCode, HandleUse);
       }
 
-      /**
-       * Reset lock out.
-       */
+      /// <summary>
+      /// Reset lock out.
+      /// </summary>
+      /// <returns></returns>
       private bool HandleResetLockOut(ConsoleSystem.Arg arg)
       {
         BasePlayer player = arg.Player();
@@ -580,9 +588,9 @@ namespace Oxide.Plugins
         return true;
       }
 
-      /**
-       * The "use" chat command.
-       */
+      /// <summary>
+      /// The "use" chat command.
+      /// </summary>
       private void HandleUse(BasePlayer player, string label, string[] args)
       {
         // Allowed to use this command?
@@ -664,9 +672,9 @@ namespace Oxide.Plugins
         SyntaxError(player, label, args);
       }
 
-      /**
-       * Notify the player that they entered a syntax error in their "use" chat command.
-       */
+      /// <summary>
+      /// Notify the player that they entered a syntax error in their "use" chat command.
+      /// </summary>
       private void SyntaxError(BasePlayer player, string label, string[] args)
       {
         player.ChatMessage(
@@ -677,18 +685,19 @@ namespace Oxide.Plugins
         );
       }
 
-      /**
-       * Get all the arguments that can be supplied to the "use" command.
-       */
+      /// <summary>
+      /// Get all the arguments that can be supplied to the "use" command.
+      /// </summary>
+      /// <returns></returns>
       private string HelpGetAllUseCommandArguments()
       {
         return string.Format("<{0}>", string.Join("|", new string[] { "1234", RandomCode, PickCode, ToggleEnabled }));
       }
     }
 
-    /**
-     * Everything related to the config.
-     */
+    /// <summary>
+    /// Everything related to the config.
+    /// </summary>
     private class AutoCodeConfig
     {
       // The plugin.
@@ -717,9 +726,9 @@ namespace Oxide.Plugins
         OxideConfig = AutoCode.Config;
       }
 
-      /**
-       * Save the changes to the config file.
-       */
+      /// <summary>
+      /// Save the changes to the config file.
+      /// </summary>
       public void Save(bool force = false)
       {
         if (UnsavedChanges || force)
@@ -728,9 +737,9 @@ namespace Oxide.Plugins
         }
       }
 
-      /**
-       * Load config values.
-       */
+      /// <summary>
+      /// Load config values.
+      /// </summary>
       public void Load()
       {
         // Options.
@@ -754,9 +763,9 @@ namespace Oxide.Plugins
         Save();
       }
 
-      /**
-       * Get the config value for the given settings.
-       */
+      /// <summary>
+      /// Get the config value for the given settings.
+      /// </summary>
       private T GetConfigValue<T>(string[] settingPath, T defaultValue, bool deprecated = false)
       {
         object value = OxideConfig.Get(settingPath);
@@ -772,9 +781,9 @@ namespace Oxide.Plugins
         return OxideConfig.ConvertValue<T>(value);
       }
 
-      /**
-       * Set the config value for the given settings.
-       */
+      /// <summary>
+      /// Set the config value for the given settings.
+      /// </summary>
       private void SetConfigValue<T>(string[] settingPath, T newValue)
       {
         List<object> pathAndTrailingValue = new List<object>();
@@ -788,9 +797,9 @@ namespace Oxide.Plugins
         UnsavedChanges = true;
       }
 
-      /**
-       * Remove the config value for the given setting.
-       */
+      /// <summary>
+      /// Remove the config value for the given setting.
+      /// </summary>
       private void RemoveConfigValue(string[] settingPath)
       {
         if (settingPath.Length == 1)
@@ -810,17 +819,21 @@ namespace Oxide.Plugins
       }
     }
 
-    /**
-     * Utility functions.
-     */
+    /// <summary>
+    /// Utility functions.
+    /// </summary>
     private static class Utils
     {
+      /// <summary>
+      /// Get the current time.
+      /// </summary>
+      /// <returns>The number of seconds that have passed since 1970-01-01.</returns>
       public static double CurrentTime() => DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
     }
 
-    /**
-     * Everything related to the data the plugin needs to save.
-     */
+    /// <summary>
+    /// Everything related to the data the plugin needs to save.
+    /// </summary>
     private class Data
     {
       // The plugin.
@@ -838,32 +851,32 @@ namespace Oxide.Plugins
         Filename = AutoCode.Name;
       }
 
-      /**
-       * Save the data.
-       */
+      /// <summary>
+      /// Save the data.
+      /// </summary>
       public void Save()
       {
         Interface.Oxide.DataFileSystem.WriteObject(Filename, Inst);
       }
 
-      /**
-       * Load the data.
-       */
+      /// <summary>
+      /// Load the data.
+      /// </summary>
       public void Load()
       {
         Inst = Interface.Oxide.DataFileSystem.ReadObject<Structure>(Filename);
       }
 
-      /**
-       * The data this plugin needs to save.
-       */
+      /// <summary>
+      /// The data this plugin needs to save.
+      /// </summary>
       public class Structure
       {
         public Dictionary<ulong, PlayerSettings> playerCodes = new Dictionary<ulong, PlayerSettings>();
 
-        /**
-         * The settings saved for each player.
-         */
+        /// <summary>
+        /// The settings saved for each player.
+        /// </summary>
         public class PlayerSettings
         {
           public string code = null;
