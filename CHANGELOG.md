@@ -1,6 +1,22 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+# [1.2.0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.1.1...v1.2.0) (2021-02-10)
+
+
+### Bug Fixes
+
+* reword InvalidArgsTooMany message ([358e6cb](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/358e6cb1ef44d22b17e756324c6e5d3553ce5883))
+* you're => your ([6538d50](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/6538d50ad038c7c608ab0b5ec41a855ef465efe9))
+
+
+### Features
+
+* add support for guest codes ([c76310d](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/c76310d012eaf716be528b29aa11cdaf60e893df))
+* don't show placed code message when in streamer mode ([a993932](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/a993932557353a4ad9c7bc81b587a7a6ad992e54))
+* replace ability to toggle plugin with ability to remove set code ([30b1022](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/30b10222d81e435aa3cddc719a937e3d28518304))
+* show current code info when using /code without any args ([4d70a59](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/4d70a5975b245479ac10c88fbc1b671a10e08385))
+
 ## [1.1.1](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.1.0...v1.1.1) (2021-02-02)
 
 
