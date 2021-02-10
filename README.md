@@ -19,7 +19,11 @@ Allow players to automatically try and unlock locked code locks with their code.
 - `/code 1234` - Sets your code to 1234.
 - `/code pick` - Opens the code lock input for you to enter a code.
 - `/code random` - Sets your code to a random code.
-- `/code remove` - Removes your set code.
+- `/code remove` - Removes your set code (and guest code).
+
+The same commands are also avalibale in a guest code version:
+
+- `/code guest 5678` - Sets your guest code to 5678.
 
 ## Console Commands
 
