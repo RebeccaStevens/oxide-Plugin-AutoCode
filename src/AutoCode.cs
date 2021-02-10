@@ -479,7 +479,7 @@ namespace Oxide.Plugins
     /// Destroy the temporary code lock for the given player.
     /// </summary>
     /// <param name="player"></param>
-    public void DestoryTempCodeLock(BasePlayer player)
+    private void DestoryTempCodeLock(BasePlayer player)
     {
       // Code lock for player exists? Remove it.
       if (tempCodeLocks.ContainsKey(player))
@@ -497,7 +497,7 @@ namespace Oxide.Plugins
     /// <summary>
     /// Unsubscribe from things that there is not point currently being subscribed to.
     /// </summary>
-    public void UnsubscribeFromUnneedHooks()
+    private void UnsubscribeFromUnneedHooks()
     {
       // No point listing for code lock codes if we aren't expecting any.
       if (tempCodeLocks.Count < 1)
