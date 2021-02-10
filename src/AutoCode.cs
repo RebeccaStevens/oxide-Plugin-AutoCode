@@ -199,12 +199,15 @@ namespace Oxide.Plugins
     /// Get the code for the given player.
     /// </summary>
     /// <param name="player">The player to get the code for.</param>
+    /// <param name="guest">If true, the guest code will be returned instead of the main code.</param>
     /// <returns>A string of the player's code or null if the player doesn't have a code.</returns>
-    public string GetCode(BasePlayer player)
+    public string GetCode(BasePlayer player, bool guest = false)
     {
       if (data.Inst.playerSettings.ContainsKey(player.userID))
       {
-        return data.Inst.playerSettings[player.userID].code;
+        return guest
+          ? data.Inst.playerSettings[player.userID].guestCode
+          : data.Inst.playerSettings[player.userID].code;
       }
 
       return null;

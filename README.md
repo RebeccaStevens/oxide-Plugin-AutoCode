@@ -72,7 +72,7 @@ Default configuration:
 ## API
 
 ```cs
-string GetCode(BasePlayer player);
+string GetCode(BasePlayer player, bool guest = false);
 void SetCode(BasePlayer player, string code, bool guest = false);
 void RemoveCode(BasePlayer player, bool guest = false);
 bool IsValidCode(string codeString);
