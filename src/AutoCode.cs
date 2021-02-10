@@ -17,7 +17,7 @@ namespace Oxide.Plugins
     private Commands commands;
     private Data data;
     private Permissions permissions;
-    private Dictionary<BasePlayer, CodeLock> tempCodeLocks;
+    private Dictionary<BasePlayer, TempCodeLockInfo> tempCodeLocks;
 
     #region Hooks
 
@@ -27,7 +27,7 @@ namespace Oxide.Plugins
       data = new Data(this);
       permissions = new Permissions(this);
       commands = new Commands(this);
-      tempCodeLocks = new Dictionary<BasePlayer, CodeLock>();
+      tempCodeLocks = new Dictionary<BasePlayer, TempCodeLockInfo>();
 
       config.Load();
       data.Load();
@@ -44,11 +44,11 @@ namespace Oxide.Plugins
       data.Save();
 
       // Remove all temp code locks - we don't want to save them.
-      foreach (CodeLock codeLock in tempCodeLocks.Values)
+      foreach (TempCodeLockInfo codeLockInfo in tempCodeLocks.Values)
       {
-        if (!codeLock.IsDestroyed)
+        if (!codeLockInfo.CodeLock.IsDestroyed)
         {
-          codeLock.Kill();
+          codeLockInfo.CodeLock.Kill();
         }
       }
       tempCodeLocks.Clear();
@@ -68,7 +68,7 @@ namespace Oxide.Plugins
     void OnCodeEntered(CodeLock codeLock, BasePlayer player, string code)
     {
       // Not one of our temporary code locks?
-      if (player == null || !tempCodeLocks.ContainsKey(player) || tempCodeLocks[player] != codeLock)
+      if (player == null || !tempCodeLocks.ContainsKey(player) || tempCodeLocks[player].CodeLock != codeLock)
       {
         UnsubscribeFromUnneedHooks();
         return;
@@ -77,14 +77,14 @@ namespace Oxide.Plugins
       DestoryTempCodeLock(player);
       UnsubscribeFromUnneedHooks();
 
-      SetCode(player, code);
+      SetCode(player, code, tempCodeLocks[player].Guest);
       Effect.server.Run(codeLock.effectCodeChanged.resourcePath, player.transform.position);
     }
 
     void OnEntitySpawned(CodeLock codeLock)
     {
       // Code already set?
-      if (codeLock.hasCode)
+      if (codeLock.hasCode && codeLock.hasGuestCode)
       {
         return;
       }
@@ -111,10 +111,20 @@ namespace Oxide.Plugins
         return;
       }
 
-      // Set code and lock the code lock.
+      // Set the main code.
       codeLock.code = settings.code;
       codeLock.hasCode = true;
       codeLock.whitelistPlayers.Add(player.userID);
+
+      // Set the guest code.
+      if (settings.guestCode != null)
+      {
+        codeLock.guestCode = settings.guestCode;
+        codeLock.hasGuestCode = true;
+        codeLock.guestPlayers.Add(player.userID);
+      }
+
+      // Lock the lock.
       codeLock.SetFlag(BaseEntity.Flags.Locked, true);
 
       player.ChatMessage(
@@ -158,9 +168,11 @@ namespace Oxide.Plugins
           { "NoPermission", "You don't have permission." },
           { "CodeAutoLocked", "Code lock placed with code {0}." },
           { "CodeUpdated", "Your new code is {0}." },
+          { "GuestCodeUpdated", "Your new guest code is {0}." },
           { "CodeRemoved", "You're code has been removed." },
+          { "GuestCodeRemoved", "You're guest code has been removed." },
           { "InvalidArgsTooMany", "No additional arguments expected." },
-          { "SyntaxError", "Syntax Error: expected \"{0}\"" },
+          { "SyntaxError", "Syntax Error: expected command in the form:\n{0}" },
           { "SpamPrevention", "Too many recent code sets. Please wait {0} and try again." },
           { "InvalidArguments", "Invalid arguments supplied." },
           { "ErrorNoPlayerFound", "Error: No player found." },
@@ -197,7 +209,8 @@ namespace Oxide.Plugins
     /// </summary>
     /// <param name="player">The player to set the code for.</param>
     /// <param name="code">The code to set for the given player.</param>
-    public void SetCode(BasePlayer player, string code)
+    /// <param name="guest">If true, the guest code will be set instead of the main code.</param>
+    public void SetCode(BasePlayer player, string code, bool guest = false)
     {
       if (!data.Inst.playerSettings.ContainsKey(player.userID))
       {
@@ -267,12 +280,20 @@ namespace Oxide.Plugins
         }
       }
 
-      settings.code = code;
+      if (guest)
+      {
+        settings.guestCode = code;
+      }
+      else
+      {
+        settings.code = code;
+      }
+
       settings.lastSet = currentTime;
 
       player.ChatMessage(
         string.Format(
-          lang.GetMessage("CodeUpdated", this, player.UserIDString),
+          lang.GetMessage(guest ? "GuestCodeUpdated" : "CodeUpdated", this, player.UserIDString),
           player.net.connection.info.GetBool("global.streamermode") ? "****" : code
         )
       );
@@ -292,7 +313,8 @@ namespace Oxide.Plugins
     /// Remove the given player's the code.
     /// </summary>
     /// <param name="player">The player to remove the code of.</param>
-    public void RemoveCode(BasePlayer player)
+    /// <param name="guest">If true, the guest code will be removed instead of the main code.</param>
+    public void RemoveCode(BasePlayer player, bool guest = false)
     {
       if (!data.Inst.playerSettings.ContainsKey(player.userID))
       {
@@ -302,8 +324,15 @@ namespace Oxide.Plugins
       // Load the player's settings.
       Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
 
-      settings.code = null;
-      player.ChatMessage(lang.GetMessage("CodeRemoved", this, player.UserIDString));
+      if (!guest)
+      {
+        settings.code = null;
+      }
+
+      // Remove the guest code both then removing the main code and when just removing the guest code.
+      settings.guestCode = null;
+
+      player.ChatMessage(lang.GetMessage(guest ? "GuestCodeRemoved" : "CodeRemoved", this, player.UserIDString));
     }
 
     /// <summary>
@@ -313,6 +342,11 @@ namespace Oxide.Plugins
     /// <returns>True if it's valid, otherwise false.</returns>
     public bool ValidCode(string codeString)
     {
+      if (codeString == null)
+      {
+        return false;
+      }
+
       int code;
       if (codeString.Length == 4 && int.TryParse(codeString, out code))
       {
@@ -344,7 +378,8 @@ namespace Oxide.Plugins
     /// Open the code lock UI for the given player.
     /// </summary>
     /// <param name="player">The player to open the lock UI for.</param>
-    public void OpenCodeLockUI(BasePlayer player)
+    /// <param name="guest">If true, the guest code will be set instead of the main code.</param>
+    public void OpenCodeLockUI(BasePlayer player, bool guest = false)
     {
       // Make sure any old code lock is destroyed.
       DestoryTempCodeLock(player);
@@ -363,7 +398,7 @@ namespace Oxide.Plugins
       }
 
       // Associate the lock with the player.
-      tempCodeLocks.Add(player, codeLock);
+      tempCodeLocks.Add(player, new TempCodeLockInfo(codeLock, guest));
 
       // Spawn and lock the code lock.
       codeLock.Spawn();
@@ -378,7 +413,7 @@ namespace Oxide.Plugins
       // Destroy the temporary code lock in 20s.
       timer.In(20f, () =>
       {
-        if (tempCodeLocks.ContainsKey(player) && tempCodeLocks[player] == codeLock)
+        if (tempCodeLocks.ContainsKey(player) && tempCodeLocks[player].CodeLock == codeLock)
         {
           DestoryTempCodeLock(player);
         }
@@ -434,9 +469,9 @@ namespace Oxide.Plugins
       if (tempCodeLocks.ContainsKey(player))
       {
         // Code lock exists? Destroy it.
-        if (!tempCodeLocks[player].IsDestroyed)
+        if (!tempCodeLocks[player].CodeLock.IsDestroyed)
         {
-          tempCodeLocks[player].Kill();
+          tempCodeLocks[player].CodeLock.Kill();
         }
         tempCodeLocks.Remove(player);
       }
@@ -647,6 +682,7 @@ namespace Oxide.Plugins
         public class PlayerSettings
         {
           public string code = null;
+          public string guestCode = null;
           public double lastSet = 0;
           public int timesSetInSpamWindow = 0;
           public double lockedOutUntil = 0;
@@ -705,6 +741,7 @@ namespace Oxide.Plugins
       public string Use = "code";
 
       // Chat Command Arguments.
+      public string Guest = "guest";
       public string PickCode = "pick";
       public string RandomCode = "random";
       public string RemoveCode = "remove";
@@ -827,57 +864,72 @@ namespace Oxide.Plugins
           plugin.data.Inst.playerSettings.Add(player.userID, new Data.Structure.PlayerSettings());
         }
 
-        string arg0 = args[0].ToLower();
+        string operation = args[0].ToLower();
+        bool guest = false;
+
+        if (operation == Guest)
+        {
+          if (args.Length < 2)
+          {
+            SyntaxError(player, label, args);
+            return;
+          }
+
+          guest = true;
+          operation = args[1].ToLower();
+        }
 
         // Pick code.
-        if (arg0 == PickCode)
+        if (operation == PickCode)
         {
-          if (args.Length > 1)
+          if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
             player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
             return;
           }
 
-          plugin.OpenCodeLockUI(player);
+          plugin.OpenCodeLockUI(player, guest);
           return;
         }
 
         // Remove?
-        if (arg0 == RemoveCode)
+        if (operation == RemoveCode)
         {
-          if (args.Length > 1)
+          if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
             player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
             return;
           }
 
-          plugin.RemoveCode(player);
+          plugin.RemoveCode(player, guest);
           return;
         }
 
         // Use random code?
-        if (arg0 == RandomCode)
+        if ((guest && args.Length > 2) || operation == RandomCode)
         {
-          if (args.Length > 1)
+          if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
             player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
             return;
           }
 
-          plugin.SetCode(player, plugin.GenerateRandomCode());
+          plugin.SetCode(player, plugin.GenerateRandomCode(), guest);
           return;
         }
 
         // Use given code?
-        if (plugin.ValidCode(arg0))
+        if (plugin.ValidCode(operation))
         {
-          if (args.Length > 1)
+          Interface.Oxide.LogInfo(string.Format("{0} {1}", guest, args.Length));
+
+          if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
             player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
             return;
           }
 
-          plugin.SetCode(player, arg0);
+          plugin.SetCode(player, operation, guest);
           return;
         }
 
@@ -903,7 +955,7 @@ namespace Oxide.Plugins
       /// <returns></returns>
       private string HelpGetAllUseCommandArguments()
       {
-        return string.Format("<{0}>", string.Join("|", new string[] { "1234", RandomCode, PickCode, RemoveCode }));
+        return string.Format("[{0}] {1}", Guest, string.Join("|", new string[] { "1234", RandomCode, PickCode, RemoveCode }));
       }
     }
 
@@ -917,6 +969,21 @@ namespace Oxide.Plugins
       /// </summary>
       /// <returns>The number of seconds that have passed since 1970-01-01.</returns>
       public static double CurrentTime() => DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
+    }
+
+    /// <summary>
+    /// The data stored for temp code locks.
+    /// </summary>
+    private class TempCodeLockInfo
+    {
+      public readonly CodeLock CodeLock;
+      public readonly bool Guest;
+
+      public TempCodeLockInfo(CodeLock CodeLock, bool Guest = false)
+      {
+        this.CodeLock = CodeLock;
+        this.Guest = Guest;
+      }
     }
   }
 }
