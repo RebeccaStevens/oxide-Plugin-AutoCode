@@ -345,12 +345,15 @@ namespace Oxide.Plugins
       player.ChatMessage(lang.GetMessage(guest ? "GuestCodeRemoved" : "CodeRemoved", this, player.UserIDString));
     }
 
+    [ObsoleteAttribute("This method is deprecated. Call IsValidCode instead.", false)]
+    public bool ValidCode(string codeString) => ValidCode(codeString);
+
     /// <summary>
     /// Is the given string a valid code?
     /// </summary>
     /// <param name="code">The code to test.</param>
     /// <returns>True if it's valid, otherwise false.</returns>
-    public bool ValidCode(string codeString)
+    public bool IsValidCode(string codeString)
     {
       if (codeString == null)
       {
@@ -929,7 +932,7 @@ namespace Oxide.Plugins
         }
 
         // Use given code?
-        if (plugin.ValidCode(operation))
+        if (plugin.IsValidCode(operation))
         {
           Interface.Oxide.LogInfo(string.Format("{0} {1}", guest, args.Length));
 
