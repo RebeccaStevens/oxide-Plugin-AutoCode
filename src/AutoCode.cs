@@ -105,8 +105,8 @@ namespace Oxide.Plugins
 
       Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
 
-      // Disabled for the player or they haven't set a code?
-      if (settings == null || !settings.enabled || settings.code == null)
+      // Player doesn't have a code?
+      if (settings == null || settings.code == null)
       {
         return;
       }
@@ -139,8 +139,8 @@ namespace Oxide.Plugins
       {
         Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
 
-        // Player has plugin enabled and they have the code?
-        if (settings != null && settings.enabled && codeLock.code == settings.code)
+        // Player has the code?
+        if (settings != null && codeLock.code == settings.code)
         {
           // Auth the player.
           codeLock.whitelistPlayers.Add(player.userID);
@@ -156,10 +156,9 @@ namespace Oxide.Plugins
       lang.RegisterMessages(new Dictionary<string, string>
         {
           { "NoPermission", "You don't have permission." },
-          { "Enabled", "Auto Code enabled." },
-          { "Disabled", "Auto Code disabled." },
           { "CodeAutoLocked", "Code lock placed with code {0}." },
           { "CodeUpdated", "Your new code is {0}." },
+          { "CodeRemoved", "You're code has been removed." },
           { "InvalidArgsTooMany", "No additional arguments expected." },
           { "SyntaxError", "Syntax Error: expected \"{0}\"" },
           { "SpamPrevention", "Too many recent code sets. Please wait {0} and try again." },
@@ -182,10 +181,10 @@ namespace Oxide.Plugins
     /// Get the code for the given player.
     /// </summary>
     /// <param name="player">The player to get the code for.</param>
-    /// <returns>A string of the player's code or null if the player doesn't have a code or they have disabled this plugin.</returns>
+    /// <returns>A string of the player's code or null if the player doesn't have a code.</returns>
     public string GetCode(BasePlayer player)
     {
-      if (data.Inst.playerSettings.ContainsKey(player.userID) && data.Inst.playerSettings[player.userID].enabled)
+      if (data.Inst.playerSettings.ContainsKey(player.userID))
       {
         return data.Inst.playerSettings[player.userID].code;
       }
@@ -280,19 +279,31 @@ namespace Oxide.Plugins
     }
 
     /// <summary>
-    /// Toggle enabled for the given player.
+    /// This method will only toggle off, not on.
     /// </summary>
-    /// <param name="player">The player to toggle this plugin for.</param>
+    /// <param name="player"></param>
+    [ObsoleteAttribute("This method is deprecated.", true)]
     public void ToggleEnabled(BasePlayer player)
     {
-      // Can't toggle until player has done their first enabled.
+      RemoveCode(player);
+    }
+
+    /// <summary>
+    /// Remove the given player's the code.
+    /// </summary>
+    /// <param name="player">The player to remove the code of.</param>
+    public void RemoveCode(BasePlayer player)
+    {
       if (!data.Inst.playerSettings.ContainsKey(player.userID))
       {
         return;
       }
 
-      data.Inst.playerSettings[player.userID].enabled = !data.Inst.playerSettings[player.userID].enabled;
-      player.ChatMessage(lang.GetMessage(data.Inst.playerSettings[player.userID].enabled ? "Enabled" : "Disabled", this, player.UserIDString));
+      // Load the player's settings.
+      Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
+
+      settings.code = null;
+      player.ChatMessage(lang.GetMessage("CodeRemoved", this, player.UserIDString));
     }
 
     /// <summary>
@@ -636,7 +647,6 @@ namespace Oxide.Plugins
         public class PlayerSettings
         {
           public string code = null;
-          public bool enabled = true;
           public double lastSet = 0;
           public int timesSetInSpamWindow = 0;
           public double lockedOutUntil = 0;
@@ -697,7 +707,7 @@ namespace Oxide.Plugins
       // Chat Command Arguments.
       public string PickCode = "pick";
       public string RandomCode = "random";
-      public string ToggleEnabled = "toggle";
+      public string RemoveCode = "remove";
 
       public Commands(AutoCode plugin)
       {
@@ -832,8 +842,8 @@ namespace Oxide.Plugins
           return;
         }
 
-        // Toggle enabled?
-        if (arg0 == ToggleEnabled)
+        // Remove?
+        if (arg0 == RemoveCode)
         {
           if (args.Length > 1)
           {
@@ -841,7 +851,7 @@ namespace Oxide.Plugins
             return;
           }
 
-          plugin.ToggleEnabled(player);
+          plugin.RemoveCode(player);
           return;
         }
 
@@ -893,7 +903,7 @@ namespace Oxide.Plugins
       /// <returns></returns>
       private string HelpGetAllUseCommandArguments()
       {
-        return string.Format("<{0}>", string.Join("|", new string[] { "1234", RandomCode, PickCode, ToggleEnabled }));
+        return string.Format("<{0}>", string.Join("|", new string[] { "1234", RandomCode, PickCode, RemoveCode }));
       }
     }
 
