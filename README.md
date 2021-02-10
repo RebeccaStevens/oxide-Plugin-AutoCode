@@ -73,11 +73,11 @@ Default configuration:
 
 ```cs
 string GetCode(BasePlayer player);
-void SetCode(BasePlayer player, string code);
-void ToggleEnabled(BasePlayer player);
+void SetCode(BasePlayer player, string code, bool guest = false);
+void RemoveCode(BasePlayer player, bool guest = false);
 bool ValidCode(string codeString);
 string GenerateRandomCode();
-void OpenCodeLockUI(BasePlayer player);
+void OpenCodeLockUI(BasePlayer player, bool guest = false);
 void ResetAllLockOuts();
 void ResetLockOut(BasePlayer player);
 ```
