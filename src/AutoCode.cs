@@ -98,12 +98,12 @@ namespace Oxide.Plugins
       }
 
       // No data for player.
-      if (!data.Inst.playerCodes.ContainsKey(player.userID))
+      if (!data.Inst.playerSettings.ContainsKey(player.userID))
       {
         return;
       }
 
-      Data.Structure.PlayerSettings settings = data.Inst.playerCodes[player.userID];
+      Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
 
       // Disabled for the player or they haven't set a code?
       if (settings == null || !settings.enabled || settings.code == null)
@@ -134,10 +134,10 @@ namespace Oxide.Plugins
         codeLock.HasFlag(BaseEntity.Flags.Locked) &&
         permissions.Oxide.UserHasPermission(player.UserIDString, permissions.Use) &&
         permissions.Oxide.UserHasPermission(player.UserIDString, permissions.Try) &&
-        data.Inst.playerCodes.ContainsKey(player.userID)
+        data.Inst.playerSettings.ContainsKey(player.userID)
       )
       {
-        Data.Structure.PlayerSettings settings = data.Inst.playerCodes[player.userID];
+        Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
 
         // Player has plugin enabled and they have the code?
         if (settings != null && settings.enabled && codeLock.code == settings.code)
@@ -185,9 +185,9 @@ namespace Oxide.Plugins
     /// <returns>A string of the player's code or null if the player doesn't have a code or they have disabled this plugin.</returns>
     public string GetCode(BasePlayer player)
     {
-      if (data.Inst.playerCodes.ContainsKey(player.userID) && data.Inst.playerCodes[player.userID].enabled)
+      if (data.Inst.playerSettings.ContainsKey(player.userID) && data.Inst.playerSettings[player.userID].enabled)
       {
-        return data.Inst.playerCodes[player.userID].code;
+        return data.Inst.playerSettings[player.userID].code;
       }
 
       return null;
@@ -200,13 +200,13 @@ namespace Oxide.Plugins
     /// <param name="code">The code to set for the given player.</param>
     public void SetCode(BasePlayer player, string code)
     {
-      if (!data.Inst.playerCodes.ContainsKey(player.userID))
+      if (!data.Inst.playerSettings.ContainsKey(player.userID))
       {
-        data.Inst.playerCodes.Add(player.userID, new Data.Structure.PlayerSettings());
+        data.Inst.playerSettings.Add(player.userID, new Data.Structure.PlayerSettings());
       }
 
       // Load the player's settings
-      Data.Structure.PlayerSettings settings = data.Inst.playerCodes[player.userID];
+      Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
 
       if (settings == null)
       {
@@ -216,16 +216,16 @@ namespace Oxide.Plugins
 
       double currentTime = Utils.CurrentTime();
 
-      if (config.SpamPreventionEnabled)
+      if (config.Options.SpamPrevention.Enabled)
       {
         double timePassed = currentTime - settings.lastSet;
         bool lockedOut = currentTime < settings.lockedOutUntil;
-        double lockOutFor = config.SpamLockOutTime * Math.Pow(2, (config.SpamLockOutTimeExponential ? settings.lockedOutTimes : 0));
+        double lockOutFor = config.Options.SpamPrevention.LockOutTime * Math.Pow(2, (config.Options.SpamPrevention.UseExponentialLockOutTime ? settings.lockedOutTimes : 0));
 
         if (!lockedOut)
         {
           // Called again within spam window time?
-          if (timePassed < config.SpamWindowTime)
+          if (timePassed < config.Options.SpamPrevention.WindowTime)
           {
             settings.timesSetInSpamWindow++;
           }
@@ -235,7 +235,7 @@ namespace Oxide.Plugins
           }
 
           // Too many recent changes?
-          if (settings.timesSetInSpamWindow > config.SpamAttempts)
+          if (settings.timesSetInSpamWindow > config.Options.SpamPrevention.Attempts)
           {
             // Locked them out.
             settings.lockedOutUntil = currentTime + lockOutFor;
@@ -253,15 +253,15 @@ namespace Oxide.Plugins
             string.Format(
               lang.GetMessage("SpamPrevention", this, player.UserIDString),
               TimeSpan.FromSeconds(Math.Ceiling(settings.lockedOutUntil - currentTime)).ToString(@"d\d\ h\h\ mm\m\ ss\s").TrimStart(' ', 'd', 'h', 'm', 's', '0'),
-              config.SpamLockOutTime,
-              config.SpamWindowTime
+              config.Options.SpamPrevention.LockOutTime,
+              config.Options.SpamPrevention.WindowTime
             )
           );
           return;
         }
 
         // Haven't been locked out for a long time?
-        if (currentTime > settings.lastLockedOut + config.SpamLockOutResetFactor * lockOutFor)
+        if (currentTime > settings.lastLockedOut + config.Options.SpamPrevention.LockOutResetFactor * lockOutFor)
         {
           // Reset their lockOuts.
           settings.lockedOutTimes = 0;
@@ -286,13 +286,13 @@ namespace Oxide.Plugins
     public void ToggleEnabled(BasePlayer player)
     {
       // Can't toggle until player has done their first enabled.
-      if (!data.Inst.playerCodes.ContainsKey(player.userID))
+      if (!data.Inst.playerSettings.ContainsKey(player.userID))
       {
         return;
       }
 
-      data.Inst.playerCodes[player.userID].enabled = !data.Inst.playerCodes[player.userID].enabled;
-      player.ChatMessage(lang.GetMessage(data.Inst.playerCodes[player.userID].enabled ? "Enabled" : "Disabled", this, player.UserIDString));
+      data.Inst.playerSettings[player.userID].enabled = !data.Inst.playerSettings[player.userID].enabled;
+      player.ChatMessage(lang.GetMessage(data.Inst.playerSettings[player.userID].enabled ? "Enabled" : "Disabled", this, player.UserIDString));
     }
 
     /// <summary>
@@ -379,7 +379,7 @@ namespace Oxide.Plugins
     /// </summary>
     public void ResetAllLockOuts()
     {
-      foreach (ulong userID in data.Inst.playerCodes.Keys)
+      foreach (ulong userID in data.Inst.playerSettings.Keys)
       {
         ResetLockOut(userID);
       }
@@ -401,12 +401,12 @@ namespace Oxide.Plugins
     /// <param name="userID"></param>
     public void ResetLockOut(ulong userID)
     {
-      if (!data.Inst.playerCodes.ContainsKey(userID))
+      if (!data.Inst.playerSettings.ContainsKey(userID))
       {
         return;
       }
 
-      Data.Structure.PlayerSettings settings = data.Inst.playerCodes[userID];
+      Data.Structure.PlayerSettings settings = data.Inst.playerSettings[userID];
       settings.lockedOutTimes = 0;
       settings.lockedOutUntil = 0;
     }
@@ -445,35 +445,49 @@ namespace Oxide.Plugins
     }
 
     /// <summary>
-    /// Everything related to the config.
+    /// The Config for this plugin.
     /// </summary>
     private class AutoCodeConfig
     {
       // The plugin.
-      private readonly AutoCode AutoCode;
+      private readonly AutoCode plugin;
 
       // The oxide DynamicConfigFile instance.
       public readonly DynamicConfigFile OxideConfig;
 
-      // Options.
-      public bool DisplayPermissionErrors { private set; get; }
-
-      // Spam prevention.
-      public bool SpamPreventionEnabled { private set; get; }
-      public int SpamAttempts { private set; get; }
-      public double SpamLockOutTime { private set; get; }
-      public double SpamWindowTime { private set; get; }
-      public bool SpamLockOutTimeExponential { private set; get; }
-      public double SpamLockOutResetFactor { private set; get; }
-
       // Meta.
       private bool UnsavedChanges = false;
 
+      public AutoCodeConfig() { }
+
       public AutoCodeConfig(AutoCode plugin)
       {
-        AutoCode = plugin;
-        OxideConfig = AutoCode.Config;
+        this.plugin = plugin;
+        OxideConfig = plugin.Config;
       }
+
+      public CommandsDef Commands = new CommandsDef();
+      public class CommandsDef
+      {
+        public string Use = "code";
+      };
+
+      public OptionsDef Options = new OptionsDef();
+      public class OptionsDef
+      {
+        public bool DisplayPermissionErrors = true;
+
+        public SpamPreventionDef SpamPrevention = new SpamPreventionDef();
+        public class SpamPreventionDef
+        {
+          public bool Enabled = true;
+          public int Attempts = 5;
+          public double LockOutTime = 5.0;
+          public double WindowTime = 30.0;
+          public bool UseExponentialLockOutTime = true;
+          public double LockOutResetFactor = 5.0;
+        };
+      };
 
       /// <summary>
       /// Save the changes to the config file.
@@ -482,7 +496,7 @@ namespace Oxide.Plugins
       {
         if (UnsavedChanges || force)
         {
-          AutoCode.SaveConfig();
+          plugin.SaveConfig();
         }
       }
 
@@ -492,22 +506,27 @@ namespace Oxide.Plugins
       public void Load()
       {
         // Options.
-        DisplayPermissionErrors = GetConfigValue(
+        Options.DisplayPermissionErrors = GetConfigValue(
           new string[] { "Options", "Display Permission Errors" },
           GetConfigValue(new string[] { "Options", "displayPermissionErrors" }, true, true)
         );
         RemoveConfigValue(new string[] { "Options", "displayPermissionErrors" }); // Remove deprecated version.
 
         // Spam prevention.
-        SpamPreventionEnabled = GetConfigValue(new string[] { "Options", "Spam Prevention", "Enable" }, true);
-        SpamAttempts = GetConfigValue(new string[] { "Options", "Spam Prevention", "Attempts" }, 5);
-        SpamLockOutTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Time" }, 5.0);
-        SpamWindowTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Window Time" }, 30.0);
-        SpamLockOutTimeExponential = GetConfigValue(new string[] { "Options", "Spam Prevention", "Exponential Lock Out Time" }, true);
-        SpamLockOutResetFactor = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Reset Factor" }, 5.0);
+        Options.SpamPrevention.Enabled = GetConfigValue(new string[] { "Options", "Spam Prevention", "Enable" }, true);
+        Options.SpamPrevention.Attempts = GetConfigValue(new string[] { "Options", "Spam Prevention", "Attempts" }, 5);
+        Options.SpamPrevention.LockOutTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Time" }, 5.0);
+        Options.SpamPrevention.WindowTime = GetConfigValue(new string[] { "Options", "Spam Prevention", "Window Time" }, 30.0);
+        Options.SpamPrevention.LockOutResetFactor = GetConfigValue(new string[] { "Options", "Spam Prevention", "Lock Out Reset Factor" }, 5.0);
+
+        Options.SpamPrevention.UseExponentialLockOutTime = GetConfigValue(
+          new string[] { "Options", "Spam Prevention", "Exponential Lock Out Time" },
+          GetConfigValue(new string[] { "Options", "Spam Prevention", "Use Exponential Lock Out Time" }, true, true)
+         );
+        RemoveConfigValue(new string[] { "Options", "Spam Prevention", "Exponential Lock Out Time" }); // Remove deprecated version.
 
         // Commands.
-        AutoCode.commands.Use = GetConfigValue(new string[] { "Commands", "Use" }, AutoCode.commands.Use);
+        plugin.commands.Use = GetConfigValue(new string[] { "Commands", "Use" }, plugin.commands.Use);
 
         Save();
       }
@@ -574,7 +593,7 @@ namespace Oxide.Plugins
     private class Data
     {
       // The plugin.
-      private readonly AutoCode AutoCode;
+      private readonly AutoCode plugin;
 
       // The plugin.
       private readonly string Filename;
@@ -584,8 +603,8 @@ namespace Oxide.Plugins
 
       public Data(AutoCode plugin)
       {
-        AutoCode = plugin;
-        Filename = AutoCode.Name;
+        this.plugin = plugin;
+        Filename = plugin.Name;
       }
 
       /// <summary>
@@ -609,7 +628,7 @@ namespace Oxide.Plugins
       /// </summary>
       public class Structure
       {
-        public Dictionary<ulong, PlayerSettings> playerCodes = new Dictionary<ulong, PlayerSettings>();
+        public Dictionary<ulong, PlayerSettings> playerSettings = new Dictionary<ulong, PlayerSettings>();
 
         /// <summary>
         /// The settings saved for each player.
@@ -633,7 +652,7 @@ namespace Oxide.Plugins
     private class Permissions
     {
       // The plugin.
-      private readonly AutoCode AutoCode;
+      private readonly AutoCode plugin;
 
       // The oxide permission instance.
       public readonly Permission Oxide;
@@ -644,8 +663,8 @@ namespace Oxide.Plugins
 
       public Permissions(AutoCode plugin)
       {
-        AutoCode = plugin;
-        Oxide = AutoCode.permission;
+        this.plugin = plugin;
+        Oxide = plugin.permission;
       }
 
       /// <summary>
@@ -653,8 +672,8 @@ namespace Oxide.Plugins
       /// </summary>
       public void Register()
       {
-        Oxide.RegisterPermission(Use, AutoCode);
-        Oxide.RegisterPermission(Try, AutoCode);
+        Oxide.RegisterPermission(Use, plugin);
+        Oxide.RegisterPermission(Try, plugin);
       }
     }
 
@@ -664,7 +683,7 @@ namespace Oxide.Plugins
     private class Commands
     {
       // The plugin.
-      private readonly AutoCode AutoCode;
+      private readonly AutoCode plugin;
 
       // The rust command instance.
       public readonly Command Rust;
@@ -682,8 +701,8 @@ namespace Oxide.Plugins
 
       public Commands(AutoCode plugin)
       {
-        AutoCode = plugin;
-        Rust = AutoCode.cmd;
+        this.plugin = plugin;
+        Rust = plugin.cmd;
       }
 
       /// <summary>
@@ -691,8 +710,8 @@ namespace Oxide.Plugins
       /// </summary>
       public void Register()
       {
-        Rust.AddConsoleCommand(ResetLockOut, AutoCode, HandleResetLockOut);
-        Rust.AddChatCommand(Use, AutoCode, HandleUse);
+        Rust.AddConsoleCommand(ResetLockOut, plugin, HandleResetLockOut);
+        Rust.AddChatCommand(Use, plugin, HandleUse);
       }
 
       /// <summary>
@@ -706,9 +725,9 @@ namespace Oxide.Plugins
         // Not admin?
         if (!arg.IsAdmin)
         {
-          if (AutoCode.config.DisplayPermissionErrors)
+          if (plugin.config.Options.DisplayPermissionErrors)
           {
-            arg.ReplyWith(AutoCode.lang.GetMessage("NoPermission", AutoCode, player?.UserIDString));
+            arg.ReplyWith(plugin.lang.GetMessage("NoPermission", plugin, player?.UserIDString));
           }
 
           return false;
@@ -717,7 +736,7 @@ namespace Oxide.Plugins
         // Incorrect number of args given.
         if (!arg.HasArgs(1) || arg.HasArgs(2))
         {
-          arg.ReplyWith(AutoCode.lang.GetMessage("InvalidArguments", AutoCode, player?.UserIDString));
+          arg.ReplyWith(plugin.lang.GetMessage("InvalidArguments", plugin, player?.UserIDString));
           return false;
         }
 
@@ -726,8 +745,8 @@ namespace Oxide.Plugins
         // Reset all?
         if (resetForString == "*")
         {
-          arg.ReplyWith(AutoCode.lang.GetMessage("ResettingAllLockOuts", AutoCode, player?.UserIDString));
-          AutoCode.ResetAllLockOuts();
+          arg.ReplyWith(plugin.lang.GetMessage("ResettingAllLockOuts", plugin, player?.UserIDString));
+          plugin.ResetAllLockOuts();
           return true;
         }
 
@@ -749,25 +768,25 @@ namespace Oxide.Plugins
         // No player found?
         if (resetForList.Count == 0)
         {
-          arg.ReplyWith(AutoCode.lang.GetMessage("ErrorNoPlayerFound", AutoCode, player?.UserIDString));
+          arg.ReplyWith(plugin.lang.GetMessage("ErrorNoPlayerFound", plugin, player?.UserIDString));
           return false;
         }
 
         // Too many players found?
         if (resetForList.Count > 1)
         {
-          arg.ReplyWith(AutoCode.lang.GetMessage("ErrorMoreThanOnePlayerFound", AutoCode, player?.UserIDString));
+          arg.ReplyWith(plugin.lang.GetMessage("ErrorMoreThanOnePlayerFound", plugin, player?.UserIDString));
           return false;
         }
 
         // Rest for player.
         arg.ReplyWith(
           string.Format(
-            AutoCode.lang.GetMessage("ResettingLockOut", AutoCode, player?.UserIDString),
+            plugin.lang.GetMessage("ResettingLockOut", plugin, player?.UserIDString),
             resetForList[0].displayName
           )
         );
-        AutoCode.ResetLockOut(resetForList[0]);
+        plugin.ResetLockOut(resetForList[0]);
         return true;
       }
 
@@ -777,11 +796,11 @@ namespace Oxide.Plugins
       private void HandleUse(BasePlayer player, string label, string[] args)
       {
         // Allowed to use this command?
-        if (!AutoCode.permissions.Oxide.UserHasPermission(player.UserIDString, AutoCode.permissions.Use))
+        if (!plugin.permissions.Oxide.UserHasPermission(player.UserIDString, plugin.permissions.Use))
         {
-          if (AutoCode.config.DisplayPermissionErrors)
+          if (plugin.config.Options.DisplayPermissionErrors)
           {
-            player.ChatMessage(AutoCode.lang.GetMessage("NoPermission", AutoCode, player.UserIDString));
+            player.ChatMessage(plugin.lang.GetMessage("NoPermission", plugin, player.UserIDString));
           }
           return;
         }
@@ -793,9 +812,9 @@ namespace Oxide.Plugins
         }
 
         // Create settings for user if they don't already have any settings.
-        if (!AutoCode.data.Inst.playerCodes.ContainsKey(player.userID))
+        if (!plugin.data.Inst.playerSettings.ContainsKey(player.userID))
         {
-          AutoCode.data.Inst.playerCodes.Add(player.userID, new Data.Structure.PlayerSettings());
+          plugin.data.Inst.playerSettings.Add(player.userID, new Data.Structure.PlayerSettings());
         }
 
         string arg0 = args[0].ToLower();
@@ -805,11 +824,11 @@ namespace Oxide.Plugins
         {
           if (args.Length > 1)
           {
-            player.ChatMessage(string.Format(AutoCode.lang.GetMessage("InvalidArgsTooMany", AutoCode, player.UserIDString), label));
+            player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
             return;
           }
 
-          AutoCode.OpenCodeLockUI(player);
+          plugin.OpenCodeLockUI(player);
           return;
         }
 
@@ -818,11 +837,11 @@ namespace Oxide.Plugins
         {
           if (args.Length > 1)
           {
-            player.ChatMessage(string.Format(AutoCode.lang.GetMessage("InvalidArgsTooMany", AutoCode, player.UserIDString), label));
+            player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
             return;
           }
 
-          AutoCode.ToggleEnabled(player);
+          plugin.ToggleEnabled(player);
           return;
         }
 
@@ -831,24 +850,24 @@ namespace Oxide.Plugins
         {
           if (args.Length > 1)
           {
-            player.ChatMessage(string.Format(AutoCode.lang.GetMessage("InvalidArgsTooMany", AutoCode, player.UserIDString), label));
+            player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
             return;
           }
 
-          AutoCode.SetCode(player, AutoCode.GenerateRandomCode());
+          plugin.SetCode(player, plugin.GenerateRandomCode());
           return;
         }
 
         // Use given code?
-        if (AutoCode.ValidCode(arg0))
+        if (plugin.ValidCode(arg0))
         {
           if (args.Length > 1)
           {
-            player.ChatMessage(string.Format(AutoCode.lang.GetMessage("InvalidArgsTooMany", AutoCode, player.UserIDString), label));
+            player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
             return;
           }
 
-          AutoCode.SetCode(player, arg0);
+          plugin.SetCode(player, arg0);
           return;
         }
 
@@ -862,7 +881,7 @@ namespace Oxide.Plugins
       {
         player.ChatMessage(
           string.Format(
-            AutoCode.lang.GetMessage("SyntaxError", AutoCode, player.UserIDString),
+            plugin.lang.GetMessage("SyntaxError", plugin, player.UserIDString),
             string.Format("/{0} {1}", label, HelpGetAllUseCommandArguments())
           )
         );
