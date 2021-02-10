@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.2.1](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.2.0...v1.2.1) (2021-02-10)
+
+
+### Bug Fixes
+
+* adjust privacy of internal methods ([4ef480e](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/4ef480e58d14a996f7d29249055c7fbec45b8e6b))
+* getCode api method now has support for fetching the guest code ([88b8326](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/88b8326c7fa2ee41cd337e332939f7f64e292f39))
+
 # [1.2.0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.1.1...v1.2.0) (2021-02-10)
 
 
