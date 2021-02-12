@@ -1,93 +1,76 @@
-# AutoCode
-
-Automatically sets the code on code locks placed.  
-Allow players to automatically try and unlock locked code locks with their code.
+# Auto Code
 
 [![BSD 3 Clause license](https://img.shields.io/github/license/RebeccaStevens/eslint-config-rebeccastevens.svg?style=flat-square)](https://opensource.org/licenses/BSD-3-Clause)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)](https://commitizen.github.io/cz-cli/)
 [![semantic-release](https://img.shields.io/badge/%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
 
+## Features
+
+- Automatically sets the code (and optionally guest code) on code locks placed by players.  
+- Allow players to automatically try and unlock locked code locks with their code.
+- Spam protect to stop players from potentially exploiting this plugin.
+- Localization supprot.
+
 ## Permissions
 
-- `autocode.use` - Allows use of this plugin.
-- `autocode.try` - Allows auto-trying of user auto-code on locked code locks.
-- `autocode.admin` - Allows use of admin commands.
+### Player Permissions
 
-## Chat Commands
+- `autocode.player.use` - Allows use of this plugin.
+- `autocode.player.try` - Allows auto-trying of player's auto-code on locked code locks.
 
-### Core Commands
+Recommend command to grant player permissions `umod.grant group default autocode.player.*`.
+
+### Admin Permissions
+
+- `autocode.admin.removelockouts` - Allows removing lock outs applied to players.
+
+Recommend command to grant admin permissions `umod.grant group admin autocode.admin.*`.
+
+## Commands
+
+### Player Commands
+
+These commands require the permission `autocode.player.use` to use. They can be run in game.
+
+#### Core Commands
 
 *You* refers to the player running the command.
 
-- `code 1234` - Sets your auto-code to 1234.
-- `code pick` - Opens the code lock interface for you to set your auto-code.
-- `code random` - Sets your auto-code to a random code.
+- `code 1234` - Sets your auto-code to the given code (in this case 1234).
+- `code pick` - Opens the code lock interface for you to enter your auto-code.
+- `code random` - Sets your auto-code to a randomly generated code.
 - `code remove` - Removes your set auto-code (and guest auto-code).
 
 The core commands are also avalibale in a guest code version. e.g.
 
-- `code guest 5678` - Sets your guest code to 5678.
+- `code guest 5678` - Sets your guest auto-code to the given code (in this case 5678).
 
-### Other Commands
+#### Other Commands
 
 - `code quiet` - Toggle quiet mode. In this mode less messages will be displayed and your auto-code will be hidden.
 - `code help` - Shows a detailed help message.
 
-## Console Commands
+### Admin Commands
 
-Requires `autocode.admin` to use.
+#### Remove Lock Outs
 
-- `autocode.resetlockout *` - Removes all lock outs for all players.
-- `autocode.resetlockout playerSteamId_or_playerDisplayName` - Removes lock out for the specified player.
+This command require the permission `autocode.admin.removelockouts` to use. It can be run in game as well as on the server console.
 
-## Configuration
-
-Default configuration:
-
-```json
-{
-  "Commands": {
-    "Use": "code"
-  },
-  "Options": {
-    "Display Permission Errors": true,
-    "Spam Prevention": {
-      "Attempts": 5,
-      "Enable": true,
-      "Exponential Lock Out Time": true,
-      "Lock Out Reset Factor": 5.0,
-      "Lock Out Time": 5.0,
-      "Window Time": 30.0
-    }
-  }
-}
-```
-
-### Explained
-
-- `Commands` - Change the commands this plugin uses.
-  - `Use` - Used to set the player's code.
-- `Options`
-  - `Display Permission Errors` - If set to false, players won't be notified if they don't have the right permissions to use this plugin.
-  - `Spam Prevention` - Prevent players from changing their code too often to prevent abuse.
-    - `Enable` - Whether spam protection is enabled or not.
-    - `Attempts` - The number of code changes the player can make with in `Window Time` before being marked as spamming.
-    - `Window Time` - The time frame (in seconds) to count the number of code changes the player has made.
-    - `Lock Out Time` - How long (in seconds) a player will be locked out for. This number should be low if using exponential lock out times.
-    - `Exponential Lock Out Time` - If true, each time the player is locked out, they will be locked out for double the amount of time they were previously locked out for.
-    - `Lock Out Reset Factor` - Determines how long (as a multiples of lock out time) before the player is forgive for all previous lockout offenses (should be greater than 1 - has no effect if not using exponential lock out time).
+- `autocode.removelockout *` - Removes lock outs for all players.
+- `autocode.removelockout playerSteamId_or_playerDisplayName` - Removes lock out for the specified player - multiple players can be specified.
 
 ## API
 
 ```cs
-string GetCode(BasePlayer player, bool guest = false);
-void SetCode(BasePlayer player, string code, bool guest = false);
-void RemoveCode(BasePlayer player, bool guest = false);
-bool IsValidCode(string codeString);
+string? GetCode(IPlayer player, bool guest = false);
+void SetCode(IPlayer player, string code, bool guest = false, bool quiet = false, bool hideCode = false);
+void RemoveCode(IPlayer player, bool guest = false, bool quiet = false);
+bool IsValidCode(string? code);
 string GenerateRandomCode();
-void OpenCodeLockUI(BasePlayer player, bool guest = false);
-void ResetAllLockOuts();
-void ResetLockOut(BasePlayer player);
+void OpenCodeLockUI(IPlayer player, bool guest = false);
+void ToggleQuietMode(IPlayer player, bool quiet = false);
+void RemoveLockOut(IPlayer player);
+void RemoveAllLockOuts();
 ```
 
 ## Development
