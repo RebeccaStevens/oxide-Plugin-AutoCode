@@ -1,6 +1,22 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+# [1.3.0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.2.1...v1.3.0) (2021-02-13)
+
+
+### Bug Fixes
+
+* fix not being able to use "/code [guest] pick" ([1666c00](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/1666c001ec5189b5ee4a1f8f2f063d3a21fbb114))
+* fix not being able to use "/code random" ([b98f0e0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/b98f0e00a310b7c0075e75575d06e58f38a984b2))
+* remove left in debugging code ([63d4b91](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/63d4b91ad8471cc17cab7b336aa0ed65e07cbb93))
+* remove saving on serve shutdown ([c13d561](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/c13d5612fd72ea5145c7794413855bfe45c088e5))
+* remove temp code locks when plugin is unloaded ([4cc345a](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/4cc345a4fe35447c3a9ff0e4db67b8abc63c3eef))
+
+
+### Features
+
+* a permission is now required to use admin commands ([ced03b4](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/ced03b4582f6e1153da7370480314720b9f044cb))
+
 ## [1.2.1](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.2.0...v1.2.1) (2021-02-10)
 
 
