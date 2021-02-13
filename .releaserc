@@ -7,12 +7,12 @@ plugins:
     - changelogTitle: "# Changelog
 
         All notable changes to this project will be documented in this file. Dates are displayed in UTC."
-  - "@semantic-release/git"
   - - "@semantic-release/exec"
     - prepareCmd: "node ./scripts/prepareForRelease.js ${nextRelease.version}"
+  - "@semantic-release/git"
   - - "@semantic-release/github"
     - assets:
-      - path: "src/AutoCode.cs"
+      - path: "AutoCode.cs"
         label: "AutoCode.cs"
       labels:
         - "Priority: Critical"
