@@ -1,3 +1,6 @@
+#define DEBUG
+#pragma warning disable IDE0051
+
 using Oxide.Core;
 using Oxide.Core.Configuration;
 using Oxide.Game.Rust.Libraries;
