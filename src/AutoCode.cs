@@ -41,18 +41,8 @@ namespace Oxide.Plugins
 
     void OnServerSave()
     {
+      RemoveAllTempCodeLocks();
       data.Save();
-
-      // Remove all temp code locks - we don't want to save them.
-      foreach (TempCodeLockInfo codeLockInfo in tempCodeLocks.Values)
-      {
-        if (!codeLockInfo.CodeLock.IsDestroyed)
-        {
-          codeLockInfo.CodeLock.Kill();
-        }
-      }
-      tempCodeLocks.Clear();
-      UnsubscribeFromUnneedHooks();
     }
 
     void OnServerShutdown()
@@ -62,6 +52,7 @@ namespace Oxide.Plugins
 
     void Unload()
     {
+      RemoveAllTempCodeLocks();
       data.Save();
     }
 
@@ -484,6 +475,23 @@ namespace Oxide.Plugins
         }
         tempCodeLocks.Remove(player);
       }
+      UnsubscribeFromUnneedHooks();
+    }
+
+    /// <summary>
+    /// Remove all the temporary code locks.
+    /// </summary>
+    private void RemoveAllTempCodeLocks()
+    {
+      // Remove all temp code locks - we don't want to save them.
+      foreach (TempCodeLockInfo codeLockInfo in tempCodeLocks.Values)
+      {
+        if (!codeLockInfo.CodeLock.IsDestroyed)
+        {
+          codeLockInfo.CodeLock.Kill();
+        }
+      }
+      tempCodeLocks.Clear();
       UnsubscribeFromUnneedHooks();
     }
 
