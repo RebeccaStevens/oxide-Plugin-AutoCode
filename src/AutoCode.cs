@@ -1,6 +1,5 @@
 using Oxide.Core;
 using Oxide.Core.Configuration;
-using Oxide.Core.Libraries;
 using Oxide.Game.Rust.Libraries;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,6 @@ namespace Oxide.Plugins
     private AutoCodeConfig config;
     private Commands commands;
     private Data data;
-    private Permissions permissions;
     private Dictionary<BasePlayer, TempCodeLockInfo> tempCodeLocks;
 
     #region Hooks
@@ -25,13 +23,12 @@ namespace Oxide.Plugins
     {
       config = new AutoCodeConfig(this);
       data = new Data(this);
-      permissions = new Permissions(this);
       commands = new Commands(this);
       tempCodeLocks = new Dictionary<BasePlayer, TempCodeLockInfo>();
 
       config.Load();
       data.Load();
-      permissions.Register();
+      Permissions.Register(this);
       commands.Register();
     }
 
@@ -77,7 +74,7 @@ namespace Oxide.Plugins
       BasePlayer player = BasePlayer.FindByID(codeLock.OwnerID);
 
       // No player or the player doesn't have permission?
-      if (player == null || !permissions.Oxide.UserHasPermission(player.UserIDString, permissions.Use))
+      if (player == null || !permission.UserHasPermission(player.UserIDString, Permissions.Use))
       {
         return;
       }
@@ -131,8 +128,8 @@ namespace Oxide.Plugins
         player != null &&
         codeLock.hasCode &&
         codeLock.HasFlag(BaseEntity.Flags.Locked) &&
-        permissions.Oxide.UserHasPermission(player.UserIDString, permissions.Use) &&
-        permissions.Oxide.UserHasPermission(player.UserIDString, permissions.Try) &&
+        permission.UserHasPermission(player.UserIDString, Permissions.Use) &&
+        permission.UserHasPermission(player.UserIDString, Permissions.Try) &&
         data.Inst.playerSettings.ContainsKey(player.userID)
       )
       {
@@ -703,31 +700,19 @@ namespace Oxide.Plugins
     /// <summary>
     /// The permissions this plugin uses.
     /// </summary>
-    private class Permissions
+    private static class Permissions
     {
-      // The plugin.
-      private readonly AutoCode plugin;
-
-      // The oxide permission instance.
-      public readonly Permission Oxide;
-
       // Permissions.
-      public string Use = "autocode.use";
-      public string Try = "autocode.try";
-
-      public Permissions(AutoCode plugin)
-      {
-        this.plugin = plugin;
-        Oxide = plugin.permission;
-      }
+      public const string Use = "autocode.use";
+      public const string Try = "autocode.try";
 
       /// <summary>
       /// Register the permissions.
       /// </summary>
-      public void Register()
+      public static void Register(AutoCode plugin)
       {
-        Oxide.RegisterPermission(Use, plugin);
-        Oxide.RegisterPermission(Try, plugin);
+        plugin.permission.RegisterPermission(Use, plugin);
+        plugin.permission.RegisterPermission(Try, plugin);
       }
     }
 
@@ -851,7 +836,7 @@ namespace Oxide.Plugins
       private void HandleUse(BasePlayer player, string label, string[] args)
       {
         // Allowed to use this command?
-        if (!plugin.permissions.Oxide.UserHasPermission(player.UserIDString, plugin.permissions.Use))
+        if (!plugin.permission.UserHasPermission(player.UserIDString, Permissions.Use))
         {
           if (plugin.config.Options.DisplayPermissionErrors)
           {
