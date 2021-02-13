@@ -11,6 +11,7 @@ Allow players to automatically try and unlock locked code locks with their code.
 
 - `autocode.use` - Allows use of this plugin.
 - `autocode.try` - Allows auto-trying of user code on locked code locks.
+- `autocode.admin` - Allows use of admin commands.
 
 ## Chat Commands
 
@@ -27,7 +28,7 @@ The same commands are also avalibale in a guest code version:
 
 ## Console Commands
 
-Only admins can use these.
+Requires `autocode.admin` to use.
 
 - `autocode.resetlockout *` - Removes all lock outs for all players.
 - `autocode.resetlockout playerSteamId_or_playerDisplayName` - Removes lock out for the specified player.
