@@ -922,7 +922,7 @@ namespace Oxide.Plugins
         }
 
         // Use random code?
-        if ((guest && args.Length > 2) || operation == RandomCode)
+        if (operation == RandomCode)
         {
           if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
