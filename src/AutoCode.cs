@@ -48,19 +48,24 @@ namespace Oxide.Plugins
       data.Save();
     }
 
-    void OnCodeEntered(CodeLock codeLock, BasePlayer player, string code)
+    object OnCodeEntered(CodeLock codeLock, BasePlayer player, string code)
     {
       // Not one of our temporary code locks?
       if (player == null || !tempCodeLocks.ContainsKey(player) || tempCodeLocks[player].CodeLock != codeLock)
       {
         UnsubscribeFromUnneedHooks();
-        return;
+        return null;
       }
 
-      DestoryTempCodeLock(player);
+      // Destroy the temporary code lock as soon as it's ok to do so.
+      timer.In(0, () =>
+      {
+        DestoryTempCodeLock(player);
+      });
 
       SetCode(player, code, tempCodeLocks[player].Guest);
       Effect.server.Run(codeLock.effectCodeChanged.resourcePath, player.transform.position);
+      return false;
     }
 
     void OnEntitySpawned(CodeLock codeLock)
