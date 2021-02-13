@@ -713,6 +713,7 @@ namespace Oxide.Plugins
       // Permissions.
       public const string Use = "autocode.use";
       public const string Try = "autocode.try";
+      public const string Admin = "autocode.admin";
 
       /// <summary>
       /// Register the permissions.
@@ -721,6 +722,7 @@ namespace Oxide.Plugins
       {
         plugin.permission.RegisterPermission(Use, plugin);
         plugin.permission.RegisterPermission(Try, plugin);
+        plugin.permission.RegisterPermission(Admin, plugin);
       }
     }
 
@@ -771,7 +773,7 @@ namespace Oxide.Plugins
         BasePlayer player = arg.Player();
 
         // Not admin?
-        if (!arg.IsAdmin)
+        if (!plugin.permission.UserHasPermission(player.UserIDString, Permissions.Admin))
         {
           if (plugin.config.Options.DisplayPermissionErrors)
           {
