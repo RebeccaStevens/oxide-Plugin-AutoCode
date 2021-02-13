@@ -45,11 +45,6 @@ namespace Oxide.Plugins
       data.Save();
     }
 
-    void OnServerShutdown()
-    {
-      Unload();
-    }
-
     void Unload()
     {
       RemoveAllTempCodeLocks();
