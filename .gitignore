@@ -364,7 +364,3 @@ FodyWeavers.xsd
 ## Other
 
 node_modules/
-
-# Top level src files.
-
-/*.cs
