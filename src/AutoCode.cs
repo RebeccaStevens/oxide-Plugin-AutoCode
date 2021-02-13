@@ -75,7 +75,6 @@ namespace Oxide.Plugins
       }
 
       DestoryTempCodeLock(player);
-      UnsubscribeFromUnneedHooks();
 
       SetCode(player, code, tempCodeLocks[player].Guest);
       Effect.server.Run(codeLock.effectCodeChanged.resourcePath, player.transform.position);
@@ -228,12 +227,6 @@ namespace Oxide.Plugins
 
       // Load the player's settings
       Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
-
-      if (settings == null)
-      {
-        Interface.Oxide.LogError(string.Format("No settings found for user \"{0}\" - setting should already be loaded.", player.displayName));
-        return;
-      }
 
       double currentTime = Utils.CurrentTime();
 
@@ -584,7 +577,7 @@ namespace Oxide.Plugins
         Options.SpamPrevention.UseExponentialLockOutTime = GetConfigValue(
           new string[] { "Options", "Spam Prevention", "Exponential Lock Out Time" },
           GetConfigValue(new string[] { "Options", "Spam Prevention", "Use Exponential Lock Out Time" }, true, true)
-         );
+        );
         RemoveConfigValue(new string[] { "Options", "Spam Prevention", "Exponential Lock Out Time" }); // Remove deprecated version.
 
         // Commands.
@@ -655,9 +648,6 @@ namespace Oxide.Plugins
     private class Data
     {
       // The plugin.
-      private readonly AutoCode plugin;
-
-      // The plugin.
       private readonly string Filename;
 
       // The actual data.
@@ -665,7 +655,6 @@ namespace Oxide.Plugins
 
       public Data(AutoCode plugin)
       {
-        this.plugin = plugin;
         Filename = plugin.Name;
       }
 
