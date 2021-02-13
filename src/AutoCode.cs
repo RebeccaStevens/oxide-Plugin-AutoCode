@@ -937,8 +937,6 @@ namespace Oxide.Plugins
         // Use given code?
         if (plugin.IsValidCode(operation))
         {
-          Interface.Oxide.LogInfo(string.Format("{0} {1}", guest, args.Length));
-
           if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
             player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
