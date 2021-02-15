@@ -5,6 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AutoCode.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>D:\rustserver\RustDedicated_Data\Managed\0Harmony.dll</HintPath>
     </Reference>
@@ -148,27 +151,6 @@
     </Reference>
     <Reference Include="Novell.Directory.Ldap">
       <HintPath>D:\rustserver\RustDedicated_Data\Managed\Novell.Directory.Ldap.dll</HintPath>
-    </Reference>
-    <Reference Include="Oxide.Core">
-      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Oxide.CSharp">
-      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Oxide.MySql">
-      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.MySql.dll</HintPath>
-    </Reference>
-    <Reference Include="Oxide.References">
-      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.References.dll</HintPath>
-    </Reference>
-    <Reference Include="Oxide.Rust">
-      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.Rust.dll</HintPath>
-    </Reference>
-    <Reference Include="Oxide.SQLite">
-      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="Oxide.Unity">
-      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.Unity.dll</HintPath>
     </Reference>
     <Reference Include="Rust.Data">
       <HintPath>D:\rustserver\RustDedicated_Data\Managed\Rust.Data.dll</HintPath>
@@ -453,5 +435,27 @@
       <HintPath>D:\rustserver\RustDedicated_Data\Managed\UnityEngine.XRModule.dll</HintPath>
     </Reference>
   </ItemGroup>
-
+  <ItemGroup>
+    <Reference Include="Oxide.Core">
+      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Oxide.CSharp">
+      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Oxide.MySql">
+      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.MySql.dll</HintPath>
+    </Reference>
+    <Reference Include="Oxide.References">
+      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.References.dll</HintPath>
+    </Reference>
+    <Reference Include="Oxide.Rust">
+      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.Rust.dll</HintPath>
+    </Reference>
+    <Reference Include="Oxide.SQLite">
+      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="Oxide.Unity">
+      <HintPath>D:\rustserver\RustDedicated_Data\Managed\Oxide.Unity.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>
