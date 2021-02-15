@@ -5,6 +5,9 @@
   "repository": "git@github.com:RebeccaStevens/uMod-Rust-Plugin-AutoCode.git",
   "license": "BSD-3-Clause",
   "author": "Rebecca Stevens <rebecca.stevens@outlook.co.nz>",
+  "scripts": {
+    "postinstall": "husky install"
+  },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
