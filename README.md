@@ -31,6 +31,7 @@ The core commands are also avalibale in a guest code version. e.g.
 ### Other Commands
 
 - `code quiet` - Toggle quiet mode. In this mode less messages will be displayed and your auto-code will be hidden.
+- `code help` - Shows a detailed help message.
 
 ## Console Commands
 
