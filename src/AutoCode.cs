@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-  [Info("Auto Code", "slaymaster3000", "0.0.0-development")]
+  [Info("Auto Code", "BlueBeka", "0.0.0-development")]
   [Description("Automatically sets the code on code locks placed.")]
   class AutoCode : RustPlugin
   {
