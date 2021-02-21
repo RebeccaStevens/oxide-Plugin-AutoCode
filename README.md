@@ -15,6 +15,8 @@ Allow players to automatically try and unlock locked code locks with their code.
 
 ## Chat Commands
 
+### Core Commands
+
 *You* refers to the player running the command.
 
 - `/code 1234` - Sets your code to 1234.
@@ -22,9 +24,13 @@ Allow players to automatically try and unlock locked code locks with their code.
 - `/code random` - Sets your code to a random code.
 - `/code remove` - Removes your set code (and guest code).
 
-The same commands are also avalibale in a guest code version:
+The core commands are also avalibale in a guest code version. e.g.
 
 - `/code guest 5678` - Sets your guest code to 5678.
+
+### Other Commands
+
+- `/code quiet` - Toggle quiet mode. In this mode less messages will be displayed and your code will be hidden.
 
 ## Console Commands
 

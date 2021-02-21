@@ -20,6 +20,8 @@ namespace Oxide.Plugins
     private Data data;
     private Dictionary<BasePlayer, TempCodeLockInfo> tempCodeLocks;
 
+    private const string HiddenCode = "****";
+
     #region Hooks
 
     void Init()
@@ -117,14 +119,13 @@ namespace Oxide.Plugins
       // Lock the lock.
       codeLock.SetFlag(BaseEntity.Flags.Locked, true);
 
-      // Don't display code if in streamer mode.
-      if (!player.net.connection.info.GetBool("global.streamermode"))
+      if (!settings.quietMode)
       {
         Message(
           player,
           string.Format(
             lang.GetMessage("CodeAutoLocked", this, player.UserIDString),
-            settings.code
+            Utils.ShouldHideCode(player, settings) ? HiddenCode : settings.code
           )
         );
       }
@@ -159,24 +160,32 @@ namespace Oxide.Plugins
     protected override void LoadDefaultMessages()
     {
       lang.RegisterMessages(new Dictionary<string, string>
-        {
-          { "NoPermission", "You don't have permission." },
-          { "CodeAutoLocked", "Code lock placed with code {0}." },
-          { "CodeUpdated", "Your new code is {0}." },
-          { "GuestCodeUpdated", "Your new guest code is {0}." },
-          { "CodeRemoved", "Your code has been removed." },
-          { "GuestCodeRemoved", "Your guest code has been removed." },
-          { "InvalidArgsTooMany", "Too many arguments supplied." },
-          { "Info", "Code: {0}\nGuest Code: {1}\n\nUsage: {2}" },
-          { "NotSet", "Not set." },
-          { "SyntaxError", "Syntax Error: expected command in the form:\n{0}" },
-          { "SpamPrevention", "Too many recent code sets. Please wait {0} and try again." },
-          { "InvalidArguments", "Invalid arguments supplied." },
-          { "ErrorNoPlayerFound", "Error: No player found." },
-          { "ErrorMoreThanOnePlayerFound", "Error: More than one player found." },
-          { "ResettingAllLockOuts", "Resetting lock outs for all players." },
-          { "ResettingLockOut", "Resetting lock outs for {0}." },
-        }, this);
+      {
+        { "Help", "Usage:\n{0}" },
+        { "Description", "Automatically set the code on code locks you place.\n\nCode: {0}\nGuest Code: {1}\nQuiet Mode: {2}" },
+        { "NoPermission", "You don't have permission." },
+        { "CodeAutoLocked", "Code lock placed with code {0}." },
+        { "CodeAutoLockedWithGuest", "Code lock placed with code {0} and guest code {1}." },
+        { "CodeUpdated", "Your auto-code has changed to {0}." },
+        { "CodeUpdatedHidden", "New auto-code set." },
+        { "GuestCodeUpdated", "Your guest auto-code has changed to {0}." },
+        { "GuestCodeUpdatedHidden", "New guest auto-code set." },
+        { "CodeRemoved", "Your auto-code has been removed." },
+        { "GuestCodeRemoved", "Your guest auto-code has been removed." },
+        { "InvalidArgsTooMany", "Too many arguments supplied." },
+        { "NotSet", "Not set" },
+        { "SyntaxError", "Syntax Error: expected command in the form:\n{0}" },
+        { "SpamPrevention", "Too many recent auto-code sets. Please wait {0} and try again." },
+        { "InvalidArguments", "Invalid arguments supplied." },
+        { "ErrorNoPlayerFound", "Error: No player found." },
+        { "ErrorMoreThanOnePlayerFound", "Error: More than one player found." },
+        { "ResettingAllLockOuts", "Resetting lock outs for all players." },
+        { "ResettingLockOut", "Resetting lock outs for {0}." },
+        { "QuietModeEnable", "Quiet mode now enabled.\nLess messages will be shown and your auto-code will be hidden." },
+        { "QuietModeDisable", "Quiet mode now disabled." },
+        { "Enabled", "Enabled" },
+        { "Disabled", "Disabled" }
+      }, this);
     }
 
     #endregion
@@ -210,7 +219,9 @@ namespace Oxide.Plugins
     /// <param name="player">The player to set the code for.</param>
     /// <param name="code">The code to set for the given player.</param>
     /// <param name="guest">If true, the guest code will be set instead of the main code.</param>
-    public void SetCode(BasePlayer player, string code, bool guest = false)
+    /// <param name="quiet">If true, no output message will be shown to the player.</param>
+    /// <param name="hideCode">If true, the new code won't be displayed to the user. Has no effect if quiet is true.</param>
+    public void SetCode(BasePlayer player, string code, bool guest = false, bool quiet = false, bool hideCode = false)
     {
       if (!data.Inst.playerSettings.ContainsKey(player.userID))
       {
@@ -255,15 +266,18 @@ namespace Oxide.Plugins
         // Locked out?
         if (lockedOut)
         {
-          Message(
-            player,
-            string.Format(
-              lang.GetMessage("SpamPrevention", this, player.UserIDString),
-              TimeSpan.FromSeconds(Math.Ceiling(settings.lockedOutUntil - currentTime)).ToString(@"d\d\ h\h\ mm\m\ ss\s").TrimStart(' ', 'd', 'h', 'm', 's', '0'),
-              config.Options.SpamPrevention.LockOutTime,
-              config.Options.SpamPrevention.WindowTime
-            )
-          );
+          if (!quiet)
+          {
+            Message(
+              player,
+              string.Format(
+                lang.GetMessage("SpamPrevention", this, player.UserIDString),
+                TimeSpan.FromSeconds(Math.Ceiling(settings.lockedOutUntil - currentTime)).ToString(@"d\d\ h\h\ mm\m\ ss\s").TrimStart(' ', 'd', 'h', 'm', 's', '0'),
+                config.Options.SpamPrevention.LockOutTime,
+                config.Options.SpamPrevention.WindowTime
+              )
+            );
+          }
           return;
         }
 
@@ -286,15 +300,18 @@ namespace Oxide.Plugins
 
       settings.lastSet = currentTime;
 
-      // Don't display code if in streamer mode.
-      if (!player.net.connection.info.GetBool("global.streamermode"))
+      if (!quiet)
       {
+        hideCode = hideCode || Utils.ShouldHideCode(player, settings);
+
         Message(
           player,
-          string.Format(
-            lang.GetMessage(guest ? "GuestCodeUpdated" : "CodeUpdated", this, player.UserIDString),
-            code
-          )
+          hideCode
+            ? lang.GetMessage(guest ? "GuestCodeUpdatedHidden" : "CodeUpdatedHidden", this, player.UserIDString)
+            : string.Format(
+                lang.GetMessage(guest ? "GuestCodeUpdated" : "CodeUpdated", this, player.UserIDString),
+                code
+              )
         );
       }
     }
@@ -314,7 +331,8 @@ namespace Oxide.Plugins
     /// </summary>
     /// <param name="player">The player to remove the code of.</param>
     /// <param name="guest">If true, the guest code will be removed instead of the main code.</param>
-    public void RemoveCode(BasePlayer player, bool guest = false)
+    /// <param name="quiet">If true, no output message will be shown to the player.</param>
+    public void RemoveCode(BasePlayer player, bool guest = false, bool quiet = false)
     {
       if (!data.Inst.playerSettings.ContainsKey(player.userID))
       {
@@ -332,10 +350,13 @@ namespace Oxide.Plugins
       // Remove the guest code both then removing the main code and when just removing the guest code.
       settings.guestCode = null;
 
-      Message(
-        player,
-        lang.GetMessage(guest ? "GuestCodeRemoved" : "CodeRemoved", this, player.UserIDString)
-      );
+      if (!quiet)
+      {
+        Message(
+          player,
+          lang.GetMessage(guest ? "GuestCodeRemoved" : "CodeRemoved", this, player.UserIDString)
+        );
+      }
     }
 
     [ObsoleteAttribute("This method is deprecated. Call IsValidCode instead.", false)]
@@ -424,6 +445,27 @@ namespace Oxide.Plugins
           DestoryTempCodeLock(player);
         }
       });
+    }
+
+    /// <summary>
+    /// Remove all lock outs caused by spam protection.
+    /// </summary>
+    /// <param name="player">The player to toggle quiet mode for.</param>
+    /// <param name="quiet">If true, no output message will be shown to the player.</param>
+    public void ToggleQuietMode(BasePlayer player, bool quiet = false)
+    {
+      // Load the player's settings.
+      Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
+
+      settings.quietMode = !settings.quietMode;
+
+      if (!quiet)
+      {
+        Message(
+          player,
+          lang.GetMessage(settings.quietMode ? "QuietModeEnable" : "QuietModeDisable", this, player.UserIDString)
+        );
+      }
     }
 
     /// <summary>
@@ -719,6 +761,7 @@ namespace Oxide.Plugins
         {
           public string code = null;
           public string guestCode = null;
+          public bool quietMode = false;
           public double lastSet = 0;
           public int timesSetInSpamWindow = 0;
           public double lockedOutUntil = 0;
@@ -771,6 +814,7 @@ namespace Oxide.Plugins
       public string PickCode = "pick";
       public string RandomCode = "random";
       public string RemoveCode = "remove";
+      public string QuietMode = "quiet";
 
       public Commands(AutoCode plugin)
       {
@@ -924,6 +968,27 @@ namespace Oxide.Plugins
           return;
         }
 
+        // Toggle quiet mode.
+        if (operation == QuietMode)
+        {
+          if (guest)
+          {
+            SyntaxError(player, label, args);
+            return;
+          }
+          if (args.Length > 1)
+          {
+            plugin.Message(
+              player,
+              string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label)
+            );
+            return;
+          }
+
+          plugin.ToggleQuietMode(player);
+          return;
+        }
+
         // Remove?
         if (operation == RemoveCode)
         {
@@ -952,7 +1017,14 @@ namespace Oxide.Plugins
             return;
           }
 
-          plugin.SetCode(player, plugin.GenerateRandomCode(), guest);
+          var hideCode = false;
+          if (plugin.data.Inst.playerSettings.ContainsKey(player.userID))
+          {
+            Data.Structure.PlayerSettings settings = plugin.data.Inst.playerSettings[player.userID];
+            hideCode = settings.quietMode;
+          }
+
+          plugin.SetCode(player, plugin.GenerateRandomCode(), guest, false, hideCode);
           return;
         }
 
@@ -982,18 +1054,19 @@ namespace Oxide.Plugins
       {
         string code = null;
         string guestCode = null;
+        bool quietMode = false;
 
         if (plugin.data.Inst.playerSettings.ContainsKey(player.userID))
         {
           Data.Structure.PlayerSettings settings = plugin.data.Inst.playerSettings[player.userID];
           code = settings.code;
           guestCode = settings.guestCode;
+          quietMode = settings.quietMode;
 
-          // Hide codes for those in streamer mode.
-          if (player.net.connection.info.GetBool("global.streamermode"))
+          if (Utils.ShouldHideCode(player, settings))
           {
-            code = code == null ? null : "****";
-            guestCode = guestCode == null ? null : "****";
+            code = code == null ? null : HiddenCode;
+            guestCode = guestCode == null ? null : HiddenCode;
           }
         }
 
@@ -1028,16 +1101,18 @@ namespace Oxide.Plugins
       /// <returns></returns>
       private string UsageInfo(string label)
       {
-        return string.Format("/{0} {1}", label, HelpGetAllUseCommandArguments());
-      }
-
-      /// <summary>
-      /// Get all the arguments that can be supplied to the "use" command.
-      /// </summary>
-      /// <returns></returns>
-      private string HelpGetAllUseCommandArguments()
-      {
-        return string.Format("[{0}] {1}", Guest, string.Join("|", new string[] { "1234", RandomCode, PickCode, RemoveCode }));
+        return string.Format(
+          "/{0} <{1}>",
+          label,
+          string.Join("|", new string[] {
+            string.Format(
+              "[{0}] <{1}>",
+              Guest,
+              string.Join("|", new string[] { "1234", PickCode, RandomCode, RemoveCode })
+            ),
+            QuietMode
+          })
+        );
       }
     }
 
@@ -1051,6 +1126,14 @@ namespace Oxide.Plugins
       /// </summary>
       /// <returns>The number of seconds that have passed since 1970-01-01.</returns>
       public static double CurrentTime() => DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
+
+      /// <summary>
+      /// Should the code for the given player be hidden in messages?
+      /// </summary>
+      public static bool ShouldHideCode(BasePlayer player, Data.Structure.PlayerSettings settings)
+      {
+        return settings.quietMode || player.net.connection.info.GetBool("global.streamermode");
+      }
     }
 
     /// <summary>
