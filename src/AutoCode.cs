@@ -1073,10 +1073,14 @@ namespace Oxide.Plugins
         plugin.Message(
           player,
           string.Format(
-            plugin.lang.GetMessage("Info", plugin, player.UserIDString),
-            code ?? plugin.lang.GetMessage("NotSet", plugin, player.UserIDString),
-            guestCode ?? plugin.lang.GetMessage("NotSet", plugin, player.UserIDString),
-            UsageInfo(label)
+            "{0}\n\n{1}",
+            string.Format(
+              plugin.lang.GetMessage("Description", plugin, player.UserIDString),
+              code ?? plugin.lang.GetMessage("NotSet", plugin, player.UserIDString),
+              guestCode ?? plugin.lang.GetMessage("NotSet", plugin, player.UserIDString),
+              plugin.lang.GetMessage(quietMode ? "Enabled" : "Disabled", plugin, player.UserIDString)
+            ),
+            GetHelp(player, label)
           )
         );
       }
@@ -1090,8 +1094,19 @@ namespace Oxide.Plugins
           player,
           string.Format(
             plugin.lang.GetMessage("SyntaxError", plugin, player.UserIDString),
-            UsageInfo(label)
+            GetUsage(label)
           )
+        );
+      }
+
+      /// <summary>
+      /// Get help for the "use" command.
+      /// </summary>
+      public string GetHelp(BasePlayer player, string label)
+      {
+        return string.Format(
+          plugin.lang.GetMessage("Help", plugin, player.UserIDString),
+          GetUsage(label)
         );
       }
 
@@ -1099,7 +1114,7 @@ namespace Oxide.Plugins
       /// Show how to use the "use" command.
       /// </summary>
       /// <returns></returns>
-      private string UsageInfo(string label)
+      private string GetUsage(string label)
       {
         return string.Format(
           "/{0} <{1}>",
