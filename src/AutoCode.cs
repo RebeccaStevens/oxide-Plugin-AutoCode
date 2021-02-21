@@ -818,6 +818,7 @@ namespace Oxide.Plugins
       public string PickCode = "pick";
       public string RandomCode = "random";
       public string RemoveCode = "remove";
+      public string SetCode = "set";
       public string QuietMode = "quiet";
 
       public Commands(AutoCode plugin)
@@ -941,25 +942,43 @@ namespace Oxide.Plugins
           plugin.data.Inst.playerSettings.Add(player.userID, new Data.Structure.PlayerSettings());
         }
 
-        string operation = args[0].ToLower();
+        int nextArg = 0;
+        int argsRemainingCount = args.Length;
+
+        string operation = args[nextArg++].ToLower();
+        argsRemainingCount--;
+
         bool guest = false;
 
         if (operation == Guest)
         {
-          if (args.Length < 2)
+          if (argsRemainingCount < 1)
           {
             SyntaxError(player, label, args);
             return;
           }
 
           guest = true;
-          operation = args[1].ToLower();
+          operation = args[nextArg++].ToLower();
+          argsRemainingCount--;
+        }
+
+        if (operation == SetCode)
+        {
+          if (argsRemainingCount < 1)
+          {
+            SyntaxError(player, label, args);
+            return;
+          }
+
+          operation = args[nextArg++].ToLower();
+          argsRemainingCount--;
         }
 
         // Pick code.
         if (operation == PickCode)
         {
-          if ((guest && args.Length > 2) || (!guest && args.Length > 1))
+          if (argsRemainingCount > 0)
           {
             plugin.Message(
               player,
@@ -980,7 +999,7 @@ namespace Oxide.Plugins
             SyntaxError(player, label, args);
             return;
           }
-          if (args.Length > 1)
+          if (argsRemainingCount > 0)
           {
             plugin.Message(
               player,
@@ -996,7 +1015,7 @@ namespace Oxide.Plugins
         // Remove?
         if (operation == RemoveCode)
         {
-          if ((guest && args.Length > 2) || (!guest && args.Length > 1))
+          if (argsRemainingCount > 0)
           {
             plugin.Message(
               player,
@@ -1012,7 +1031,7 @@ namespace Oxide.Plugins
         // Use random code?
         if (operation == RandomCode)
         {
-          if ((guest && args.Length > 2) || (!guest && args.Length > 1))
+          if (argsRemainingCount > 0)
           {
             plugin.Message(
               player,
@@ -1035,7 +1054,7 @@ namespace Oxide.Plugins
         // Use given code?
         if (plugin.IsValidCode(operation))
         {
-          if ((guest && args.Length > 2) || (!guest && args.Length > 1))
+          if (argsRemainingCount > 0)
           {
             plugin.Message(
               player,
@@ -1121,13 +1140,22 @@ namespace Oxide.Plugins
       private string GetUsage(string label)
       {
         return string.Format(
-          "/{0} <{1}>",
+          "{0} <{1}>",
           label,
           string.Join("|", new string[] {
             string.Format(
               "[{0}] <{1}>",
               Guest,
-              string.Join("|", new string[] { "1234", PickCode, RandomCode, RemoveCode })
+              string.Join("|", new string[] {
+                string.Format(
+                  "[{0}] {1}",
+                  SetCode,
+                  "1234"
+                ),
+                PickCode,
+                RandomCode,
+                RemoveCode
+              })
             ),
             QuietMode
           })
