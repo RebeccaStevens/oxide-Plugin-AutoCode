@@ -120,7 +120,8 @@ namespace Oxide.Plugins
       // Don't display code if in streamer mode.
       if (!player.net.connection.info.GetBool("global.streamermode"))
       {
-        player.ChatMessage(
+        Message(
+          player,
           string.Format(
             lang.GetMessage("CodeAutoLocked", this, player.UserIDString),
             settings.code
@@ -254,7 +255,8 @@ namespace Oxide.Plugins
         // Locked out?
         if (lockedOut)
         {
-          player.ChatMessage(
+          Message(
+            player,
             string.Format(
               lang.GetMessage("SpamPrevention", this, player.UserIDString),
               TimeSpan.FromSeconds(Math.Ceiling(settings.lockedOutUntil - currentTime)).ToString(@"d\d\ h\h\ mm\m\ ss\s").TrimStart(' ', 'd', 'h', 'm', 's', '0'),
@@ -287,7 +289,8 @@ namespace Oxide.Plugins
       // Don't display code if in streamer mode.
       if (!player.net.connection.info.GetBool("global.streamermode"))
       {
-        player.ChatMessage(
+        Message(
+          player,
           string.Format(
             lang.GetMessage(guest ? "GuestCodeUpdated" : "CodeUpdated", this, player.UserIDString),
             code
@@ -329,7 +332,10 @@ namespace Oxide.Plugins
       // Remove the guest code both then removing the main code and when just removing the guest code.
       settings.guestCode = null;
 
-      player.ChatMessage(lang.GetMessage(guest ? "GuestCodeRemoved" : "CodeRemoved", this, player.UserIDString));
+      Message(
+        player,
+        lang.GetMessage(guest ? "GuestCodeRemoved" : "CodeRemoved", this, player.UserIDString)
+      );
     }
 
     [ObsoleteAttribute("This method is deprecated. Call IsValidCode instead.", false)]
@@ -508,6 +514,22 @@ namespace Oxide.Plugins
     }
 
     /// <summary>
+     /// Message the given player via the in-game chat.
+     /// </summary>
+    private void Message(BasePlayer player, string message)
+    {
+      if (string.IsNullOrEmpty(message) || !player.IsConnected)
+        return;
+
+      player.SendConsoleCommand(
+        "chat.add",
+        2,
+        config.Commands.ChatIconId,
+        message
+      );
+    }
+
+    /// <summary>
     /// The Config for this plugin.
     /// </summary>
     private class AutoCodeConfig
@@ -533,6 +555,7 @@ namespace Oxide.Plugins
       public class CommandsDef
       {
         public string Use = "code";
+        public ulong ChatIconId = 76561199143387303u;
       };
 
       public OptionsDef Options = new OptionsDef();
@@ -850,7 +873,10 @@ namespace Oxide.Plugins
         {
           if (plugin.config.Options.DisplayPermissionErrors)
           {
-            player.ChatMessage(plugin.lang.GetMessage("NoPermission", plugin, player.UserIDString));
+            plugin.Message(
+              player,
+              plugin.lang.GetMessage("NoPermission", plugin, player.UserIDString)
+            );
           }
           return;
         }
@@ -887,7 +913,10 @@ namespace Oxide.Plugins
         {
           if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
-            player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
+            plugin.Message(
+              player,
+              string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label)
+            );
             return;
           }
 
@@ -900,7 +929,10 @@ namespace Oxide.Plugins
         {
           if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
-            player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
+            plugin.Message(
+              player,
+              string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label)
+            );
             return;
           }
 
@@ -913,7 +945,10 @@ namespace Oxide.Plugins
         {
           if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
-            player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
+            plugin.Message(
+              player,
+              string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label)
+            );
             return;
           }
 
@@ -926,7 +961,10 @@ namespace Oxide.Plugins
         {
           if ((guest && args.Length > 2) || (!guest && args.Length > 1))
           {
-            player.ChatMessage(string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label));
+            plugin.Message(
+              player,
+              string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label)
+            );
             return;
           }
 
@@ -959,7 +997,8 @@ namespace Oxide.Plugins
           }
         }
 
-        player.ChatMessage(
+        plugin.Message(
+          player,
           string.Format(
             plugin.lang.GetMessage("Info", plugin, player.UserIDString),
             code ?? plugin.lang.GetMessage("NotSet", plugin, player.UserIDString),
@@ -974,7 +1013,8 @@ namespace Oxide.Plugins
       /// </summary>
       private void SyntaxError(BasePlayer player, string label, string[] args)
       {
-        player.ChatMessage(
+        plugin.Message(
+          player,
           string.Format(
             plugin.lang.GetMessage("SyntaxError", plugin, player.UserIDString),
             UsageInfo(label)
