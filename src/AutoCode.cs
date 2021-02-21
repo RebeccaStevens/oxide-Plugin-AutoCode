@@ -124,8 +124,12 @@ namespace Oxide.Plugins
         Message(
           player,
           string.Format(
-            lang.GetMessage("CodeAutoLocked", this, player.UserIDString),
-            Utils.ShouldHideCode(player, settings) ? HiddenCode : settings.code
+            lang.GetMessage(
+              codeLock.hasGuestCode ? "CodeAutoLockedWithGuest" : "CodeAutoLocked",
+              this,
+              player.UserIDString),
+            Utils.ShouldHideCode(player, settings) ? HiddenCode : codeLock.code,
+            Utils.ShouldHideCode(player, settings) ? HiddenCode : codeLock.guestCode
           )
         );
       }
