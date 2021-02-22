@@ -129,8 +129,8 @@ namespace Oxide.Plugins
               codeLock.hasGuestCode ? "CodeAutoLockedWithGuest" : "CodeAutoLocked",
               this,
               player.UserIDString),
-            Utils.ShouldHideCode(player, settings) ? HiddenCode : codeLock.code,
-            Utils.ShouldHideCode(player, settings) ? HiddenCode : codeLock.guestCode
+            Formatter.Value(Utils.ShouldHideCode(player, settings) ? HiddenCode : codeLock.code),
+            Formatter.Value(Utils.ShouldHideCode(player, settings) ? HiddenCode : codeLock.guestCode)
           )
         );
       }
