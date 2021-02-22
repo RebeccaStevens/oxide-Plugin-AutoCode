@@ -1,6 +1,23 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+# [1.4.0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.3.0...v1.4.0) (2021-02-22)
+
+
+### Bug Fixes
+
+* display guest code as well as code when code lock is placed with one ([18b587c](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/18b587ce5f6d63294ed13a822bf8056500442efa))
+* formatting on message when a code lock is placed ([659e0bf](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/659e0bf98058b4f4c19c7be3f5dd5902f5527981))
+* update user messages ([1a064f2](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/1a064f2a9dd261941e8048e015377e064f083ed3))
+
+
+### Features
+
+* add extended help message ([3ca82a0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/3ca82a059591694540a5771d9f190d88aa5c1423))
+* add quiet mode ([38b87b6](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/38b87b6d9d748b78b83f983bddf404fb6809e802))
+* allow changing the icon displayed to the user in the in-game chat ([8874903](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/88749039acf28c499b5704b3abef60c1d3ef0640))
+* allow for optional "set" before code in command ([281f71d](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/281f71dc2b0f328fe4abf9b47df8e27a8d4da790))
+
 # [1.3.0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.2.1...v1.3.0) (2021-02-13)
 
 
