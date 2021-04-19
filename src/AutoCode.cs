@@ -10,7 +10,7 @@ using UnityEngine;
 namespace Oxide.Plugins
 {
   [Info("Auto Code", "BlueBeka", "0.0.0-development")]
-  [Description("Automatically sets the code on code locks placed.")]
+  [Description("Automatically sets the code on code locks when placed.")]
   class AutoCode : RustPlugin
   {
     private AutoCodeConfig config;
