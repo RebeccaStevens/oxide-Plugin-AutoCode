@@ -1,7 +1,7 @@
 # Configuration for probot-settings - https://github.com/probot/settings
 repository:
   name: uMod-Rust-Plugin-AutoCode
-  description: Automatically sets the code on code locks placed.
+  description: Automatically sets the code on code locks when placed.
   topics: playrust umod oxide
   private: false
   has_issues: true
