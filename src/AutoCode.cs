@@ -72,7 +72,7 @@ namespace Oxide.Plugins
       return false;
     }
 
-    private void OnEntitySpawned(CodeLock codeLock)
+    private void OnItemDeployed(Deployer deployer, BaseEntity lockable, CodeLock codeLock)
     {
       // Code already set?
       if (codeLock.hasCode && codeLock.hasGuestCode)
