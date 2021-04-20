@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+## [1.4.1](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.4.0...v1.4.1) (2021-04-20)
+
+
+### Performance Improvements
+
+* don't remove temp code locks before saving; instead just mark them as not saveable ([bcf5027](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/bcf50277dccbb0a875ce6770025d437fa2ec0164))
+* only trigger code setting when a new code lock is deployed by a player, not just when spawned ([bf8e8ac](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/bf8e8ac51fe1b4ee02f6c2746b7d19a15e5545bb))
+
 # [1.4.0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.3.0...v1.4.0) (2021-02-22)
 
 
