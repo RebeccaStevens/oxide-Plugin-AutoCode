@@ -1,6 +1,6 @@
 # AutoCode
 
-Automatically sets the code on code locks placed.  
+Automatically sets the code on code locks when placed.  
 Allow players to automatically try and unlock locked code locks with their code.
 
 [![BSD 3 Clause license](https://img.shields.io/github/license/RebeccaStevens/eslint-config-rebeccastevens.svg?style=flat-square)](https://opensource.org/licenses/BSD-3-Clause)
