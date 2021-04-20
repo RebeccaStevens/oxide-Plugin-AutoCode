@@ -11,7 +11,7 @@ namespace Oxide.Plugins
 {
   [Info("Auto Code", "BlueBeka", "0.0.0-development")]
   [Description("Automatically sets the code on code locks when placed.")]
-  class AutoCode : RustPlugin
+  public class AutoCode : RustPlugin
   {
     private AutoCodeConfig config;
     private Commands commands;
@@ -22,7 +22,7 @@ namespace Oxide.Plugins
 
     #region Hooks
 
-    void Init()
+    private void Init()
     {
       config = new AutoCodeConfig(this);
       data = new Data(this);
@@ -35,23 +35,24 @@ namespace Oxide.Plugins
       commands.Register();
     }
 
-    protected override void LoadDefaultConfig() {
+    protected override void LoadDefaultConfig()
+    {
       Interface.Oxide.LogInfo("New configuration file created.");
     }
 
-    void OnServerSave()
+    private void OnServerSave()
     {
       RemoveAllTempCodeLocks();
       data.Save();
     }
 
-    void Unload()
+    private void Unload()
     {
       RemoveAllTempCodeLocks();
       data.Save();
     }
 
-    object OnCodeEntered(CodeLock codeLock, BasePlayer player, string code)
+    private object OnCodeEntered(CodeLock codeLock, BasePlayer player, string code)
     {
       // Not one of our temporary code locks?
       if (player == null || !tempCodeLocks.ContainsKey(player) || tempCodeLocks[player].CodeLock != codeLock)
@@ -71,7 +72,7 @@ namespace Oxide.Plugins
       return false;
     }
 
-    void OnEntitySpawned(CodeLock codeLock)
+    private void OnEntitySpawned(CodeLock codeLock)
     {
       // Code already set?
       if (codeLock.hasCode && codeLock.hasGuestCode)
@@ -133,7 +134,7 @@ namespace Oxide.Plugins
       }
     }
 
-    object CanUseLockedEntity(BasePlayer player, CodeLock codeLock)
+    private object CanUseLockedEntity(BasePlayer player, CodeLock codeLock)
     {
       // Is a player that has permission and lock is locked?
       if (
@@ -202,7 +203,7 @@ namespace Oxide.Plugins
       }, this);
     }
 
-    #endregion
+    #endregion Hooks
 
     #region API
 
@@ -507,7 +508,6 @@ namespace Oxide.Plugins
       }
     }
 
-
     /// <summary>
     /// Reset (remove) the lock out caused by spam protection for the given player.
     /// </summary>
@@ -533,7 +533,7 @@ namespace Oxide.Plugins
       settings.lockedOutUntil = 0;
     }
 
-    #endregion
+    #endregion API
 
     /// <summary>
     /// Destroy the temporary code lock for the given player.
@@ -584,8 +584,8 @@ namespace Oxide.Plugins
     }
 
     /// <summary>
-     /// Message the given player via the in-game chat.
-     /// </summary>
+    /// Message the given player via the in-game chat.
+    /// </summary>
     private void Message(BasePlayer player, string message)
     {
       if (string.IsNullOrEmpty(message) || !player.IsConnected)
@@ -613,7 +613,9 @@ namespace Oxide.Plugins
       // Meta.
       private bool UnsavedChanges = false;
 
-      public AutoCodeConfig() { }
+      public AutoCodeConfig()
+      {
+      }
 
       public AutoCodeConfig(AutoCode plugin)
       {
@@ -622,6 +624,7 @@ namespace Oxide.Plugins
       }
 
       public CommandsDef Commands = new CommandsDef();
+
       public class CommandsDef
       {
         public string Use = "code";
@@ -629,11 +632,13 @@ namespace Oxide.Plugins
       };
 
       public OptionsDef Options = new OptionsDef();
+
       public class OptionsDef
       {
         public bool DisplayPermissionErrors = true;
 
         public SpamPreventionDef SpamPrevention = new SpamPreventionDef();
+
         public class SpamPreventionDef
         {
           public bool Enabled = true;
@@ -806,6 +811,7 @@ namespace Oxide.Plugins
     {
       // Permissions.
       public const string Use = "autocode.use";
+
       public const string Try = "autocode.try";
       public const string Admin = "autocode.admin";
 
@@ -838,6 +844,7 @@ namespace Oxide.Plugins
       public string Use = "code";
 
       // Chat Command Arguments.
+
       public string Guest = "guest";
       public string PickCode = "pick";
       public string RandomCode = "random";
