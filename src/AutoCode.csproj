@@ -1,12 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>IDE0051</NoWarn>
+    <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="AutoCode.cs" />
-  </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>D:\rustserver\RustDedicated_Data\Managed\0Harmony.dll</HintPath>
