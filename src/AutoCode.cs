@@ -42,7 +42,6 @@ namespace Oxide.Plugins
 
     private void OnServerSave()
     {
-      RemoveAllTempCodeLocks();
       data.Save();
     }
 
@@ -438,6 +437,9 @@ namespace Oxide.Plugins
         Interface.Oxide.LogError("Failed to create code lock.");
         return;
       }
+
+      // Don't save this code lock.
+      codeLock.enableSaving = false;
 
       // Associate the lock with the player.
       tempCodeLocks.Add(player, new TempCodeLockInfo(codeLock, guest));
