@@ -1,4 +1,5 @@
 using Oxide.Core;
+using Oxide.Core.Plugins;
 using Oxide.Core.Configuration;
 using Oxide.Game.Rust.Libraries;
 using System;
@@ -13,6 +14,9 @@ namespace Oxide.Plugins
   [Description("Automatically sets the code on code locks when placed.")]
   public class AutoCode : RustPlugin
   {
+    [PluginReference("NoEscape")]
+    private Plugin pluginNoEscape;
+
     private AutoCodeConfig config;
     private Commands commands;
     private Data data;
@@ -91,6 +95,30 @@ namespace Oxide.Plugins
       if (!data.Inst.playerSettings.ContainsKey(player.userID))
       {
         return;
+      }
+
+      // NoEscape blocked.
+      if (pluginNoEscape != null)
+      {
+        if (
+          config.Options.PluginIntegration.NoEscape.BlockRaid &&
+          pluginNoEscape.Call<bool>("HasPerm", player.UserIDString, "raid.buildblock") &&
+          pluginNoEscape.Call<bool>("IsRaidBlocked", player.UserIDString)
+        )
+        {
+          Message(player, lang.GetMessage("NoEscape.RaidBlocked", this, player.UserIDString));
+          return;
+        }
+        
+        if (
+          config.Options.PluginIntegration.NoEscape.BlockCombat &&
+          pluginNoEscape.Call<bool>("HasPerm", player.UserIDString, "combat.buildblock") &&
+          pluginNoEscape.Call<bool>("IsCombatBlocked", player.UserIDString)
+        )
+        {
+          Message(player, lang.GetMessage("NoEscape.CombatBlocked", this, player.UserIDString));
+          return;
+        }
       }
 
       Data.Structure.PlayerSettings settings = data.Inst.playerSettings[player.userID];
@@ -199,6 +227,8 @@ namespace Oxide.Plugins
         { "HelpExtendedQuietMode", "Toggles on/off quiet mode:\n{0}" },
         { "HelpExtendedQuietModeDetails", "Less messages will be shown and your auto-code will be hidden." },
         { "HelpExtendedHelp", "Displays this help message:\n{0}" },
+        { "NoEscape.RaidBlocked", "Auto-code disbaled due to raid block." },
+        { "NoEscape.CombatBlocked", "Auto-code disbaled due to combat block." },
       }, this);
     }
 
@@ -640,6 +670,8 @@ namespace Oxide.Plugins
         public bool DisplayPermissionErrors = true;
 
         public SpamPreventionDef SpamPrevention = new SpamPreventionDef();
+        
+        public PluginIntegrationDef PluginIntegration = new PluginIntegrationDef();
 
         public class SpamPreventionDef
         {
@@ -649,6 +681,17 @@ namespace Oxide.Plugins
           public double WindowTime = 30.0;
           public bool UseExponentialLockOutTime = true;
           public double LockOutResetFactor = 5.0;
+        };
+
+        public class PluginIntegrationDef
+        {
+          public NoEscapeDef NoEscape = new NoEscapeDef();
+
+          public class NoEscapeDef
+          {
+            public bool BlockRaid = false;
+            public bool BlockCombat = false;
+          };
         };
       };
 
@@ -687,6 +730,10 @@ namespace Oxide.Plugins
           GetConfigValue(new string[] { "Options", "Spam Prevention", "Use Exponential Lock Out Time" }, true, true)
         );
         RemoveConfigValue(new string[] { "Options", "Spam Prevention", "Exponential Lock Out Time" }); // Remove deprecated version.
+
+        // Plugin integration - No Escape.
+        Options.PluginIntegration.NoEscape.BlockCombat = GetConfigValue(new string[] { "Options", "Plugin Integration", "No Escape", "Block Combat" }, false);
+        Options.PluginIntegration.NoEscape.BlockRaid = GetConfigValue(new string[] { "Options", "Plugin Integration", "No Escape", "Block Raid" }, true);
 
         // Commands.
         plugin.commands.Use = GetConfigValue(new string[] { "Commands", "Use" }, plugin.commands.Use);
