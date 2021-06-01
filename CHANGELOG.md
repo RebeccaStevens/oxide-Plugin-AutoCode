@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+# [1.5.0](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.4.1...v1.5.0) (2021-06-01)
+
+
+### Features
+
+* **noescape:** integrate with noescape plugin ([680bf36](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/commit/680bf36cacc9fc88fde6f6f4eef9b882ac3f9274))
+
 ## [1.4.1](https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode/compare/v1.4.0...v1.4.1) (2021-04-20)
 
 
