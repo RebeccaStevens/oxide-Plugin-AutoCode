@@ -20,7 +20,7 @@
     "commitizen": "^4.2.4",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^8.0.1",
-    "lint-staged": "^12.4.2",
+    "lint-staged": "^12.4.3",
     "prettier": "^2.6.2",
     "semantic-release": "^19.0.2"
   }
