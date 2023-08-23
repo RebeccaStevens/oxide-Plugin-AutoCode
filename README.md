@@ -1,6 +1,6 @@
 # AutoCode
 
-Automatically sets the code on code locks when placed.  
+Automatically sets the code on code locks when placed.
 Allow players to automatically try and unlock locked code locks with their code.
 
 [![BSD 3 Clause license](https://img.shields.io/github/license/RebeccaStevens/eslint-config-rebeccastevens.svg?style=flat-square)](https://opensource.org/licenses/BSD-3-Clause)
@@ -17,14 +17,14 @@ Allow players to automatically try and unlock locked code locks with their code.
 
 ### Core Commands
 
-*You* refers to the player running the command.
+_You_ refers to the player running the command.
 
 - `code 1234` - Sets your auto-code to 1234.
 - `code pick` - Opens the code lock interface for you to set your auto-code.
 - `code random` - Sets your auto-code to a random code.
 - `code remove` - Removes your set auto-code (and guest auto-code).
 
-The core commands are also avalibale in a guest code version. e.g.
+The core commands are also available in a guest code version. e.g.
 
 - `code guest 5678` - Sets your guest code to 5678.
 

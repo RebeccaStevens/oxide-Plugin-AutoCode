@@ -1,27 +1,34 @@
 {
-  "name": "uMod-Rust-Plugin-AutoCode",
-  "version": "0.0.0-development",
   "private": true,
-  "repository": "git@github.com:RebeccaStevens/uMod-Rust-Plugin-AutoCode.git",
-  "license": "BSD-3-Clause",
-  "author": "Rebecca Stevens <rebecca.stevens@outlook.co.nz>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Rebecca Stevens",
+    "email": "rebecca.stevens@outlook.co.nz"
+  },
   "scripts": {
-    "postinstall": "husky install"
+    "lint": "lint:spelling",
+    "lint:spelling": "cspell \"**\" \".github/**/*\"",
+    "prepare": "husky install"
   },
   "devDependencies": {
-    "@commitlint/cli": "^13.1.0",
-    "@commitlint/config-conventional": "^13.1.0",
-    "@semantic-release/changelog": "^6.0.0",
-    "@semantic-release/commit-analyzer": "^9.0.1",
-    "@semantic-release/exec": "^6.0.1",
-    "@semantic-release/git": "^10.0.0",
-    "@semantic-release/github": "^8.0.1",
-    "@semantic-release/release-notes-generator": "^10.0.2",
-    "commitizen": "^4.2.4",
-    "cz-conventional-changelog": "^3.3.0",
-    "husky": "^7.0.2",
-    "lint-staged": "^11.1.2",
-    "prettier": "^2.4.1",
-    "semantic-release": "^18.0.0"
+    "@commitlint/cli": "17.7.1",
+    "@commitlint/config-conventional": "17.7.0",
+    "@semantic-release/changelog": "6.0.3",
+    "@semantic-release/commit-analyzer": "10.0.1",
+    "@semantic-release/exec": "6.0.3",
+    "@semantic-release/git": "10.0.1",
+    "@semantic-release/github": "9.0.4",
+    "@semantic-release/release-notes-generator": "11.0.4",
+    "commitizen": "4.3.0",
+    "cspell": "7.0.1",
+    "cz-conventional-changelog": "3.3.0",
+    "husky": "8.0.3",
+    "lint-staged": "14.0.1",
+    "prettier": "3.0.2",
+    "semantic-release": "21.0.9"
   }
 }

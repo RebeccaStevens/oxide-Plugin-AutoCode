@@ -1,2 +1,6 @@
-* text=auto
+* text=auto eol=crlf
+
 *.ai filter=lfs diff=lfs merge=lfs -text
+/.husky/** linguist-detectable=false
+
+/CHANGELOG.md linguist-generated

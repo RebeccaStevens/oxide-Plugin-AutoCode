@@ -1,5 +1,3 @@
-// This is an auto generated file. Please edit "src/AutoCode.cs" instead.
-
 using Oxide.Core;
 using Oxide.Core.Plugins;
 using Oxide.Core.Configuration;
@@ -62,14 +60,14 @@ namespace Oxide.Plugins
       // Not one of our temporary code locks?
       if (player == null || !tempCodeLocks.ContainsKey(player) || tempCodeLocks[player].CodeLock != codeLock)
       {
-        UnsubscribeFromUnneedHooks();
+        UnsubscribeFromUnneededHooks();
         return null;
       }
 
       // Destroy the temporary code lock as soon as it's ok to do so.
       timer.In(0, () =>
       {
-        DestoryTempCodeLock(player);
+        DestroyTempCodeLock(player);
       });
 
       SetCode(player, code, tempCodeLocks[player].Guest);
@@ -111,7 +109,7 @@ namespace Oxide.Plugins
           Message(player, lang.GetMessage("NoEscape.RaidBlocked", this, player.UserIDString));
           return;
         }
-        
+
         if (
           config.Options.PluginIntegration.NoEscape.BlockCombat &&
           pluginNoEscape.Call<bool>("HasPerm", player.UserIDString, "combat.buildblock") &&
@@ -225,12 +223,12 @@ namespace Oxide.Plugins
         { "HelpExtendedPickCode", "Open the code lock interface to set your auto-code:\n{0}" },
         { "HelpExtendedRandomCode", "Set your auto-code to a randomly generated code:\n{0}" },
         { "HelpExtendedRemoveCode", "Remove your set auto-code:\n{0}" },
-        { "HelpExtendedCoreGuestCommands", "Each core command is also avalibale in a guest code version. e.g.\n{0}" },
+        { "HelpExtendedCoreGuestCommands", "Each core command is also available in a guest code version. e.g.\n{0}" },
         { "HelpExtendedQuietMode", "Toggles on/off quiet mode:\n{0}" },
         { "HelpExtendedQuietModeDetails", "Less messages will be shown and your auto-code will be hidden." },
         { "HelpExtendedHelp", "Displays this help message:\n{0}" },
-        { "NoEscape.RaidBlocked", "Auto-code disbaled due to raid block." },
-        { "NoEscape.CombatBlocked", "Auto-code disbaled due to combat block." },
+        { "NoEscape.RaidBlocked", "Auto-code disabled due to raid block." },
+        { "NoEscape.CombatBlocked", "Auto-code disabled due to combat block." },
       }, this);
     }
 
@@ -455,7 +453,7 @@ namespace Oxide.Plugins
     public void OpenCodeLockUI(BasePlayer player, bool guest = false)
     {
       // Make sure any old code lock is destroyed.
-      DestoryTempCodeLock(player);
+      DestroyTempCodeLock(player);
 
       // Create a temporary code lock.
       CodeLock codeLock = GameManager.server.CreateEntity(
@@ -491,7 +489,7 @@ namespace Oxide.Plugins
       {
         if (tempCodeLocks.ContainsKey(player) && tempCodeLocks[player].CodeLock == codeLock)
         {
-          DestoryTempCodeLock(player);
+          DestroyTempCodeLock(player);
         }
       });
     }
@@ -573,7 +571,7 @@ namespace Oxide.Plugins
     /// Destroy the temporary code lock for the given player.
     /// </summary>
     /// <param name="player"></param>
-    private void DestoryTempCodeLock(BasePlayer player)
+    private void DestroyTempCodeLock(BasePlayer player)
     {
       // Code lock for player exists? Remove it.
       if (tempCodeLocks.ContainsKey(player))
@@ -585,7 +583,7 @@ namespace Oxide.Plugins
         }
         tempCodeLocks.Remove(player);
       }
-      UnsubscribeFromUnneedHooks();
+      UnsubscribeFromUnneededHooks();
     }
 
     /// <summary>
@@ -602,13 +600,13 @@ namespace Oxide.Plugins
         }
       }
       tempCodeLocks.Clear();
-      UnsubscribeFromUnneedHooks();
+      UnsubscribeFromUnneededHooks();
     }
 
     /// <summary>
     /// Unsubscribe from things that there is not point currently being subscribed to.
     /// </summary>
-    private void UnsubscribeFromUnneedHooks()
+    private void UnsubscribeFromUnneededHooks()
     {
       // No point listing for code lock codes if we aren't expecting any.
       if (tempCodeLocks.Count < 1)
@@ -672,7 +670,7 @@ namespace Oxide.Plugins
         public bool DisplayPermissionErrors = true;
 
         public SpamPreventionDef SpamPrevention = new SpamPreventionDef();
-        
+
         public PluginIntegrationDef PluginIntegration = new PluginIntegrationDef();
 
         public class SpamPreventionDef
@@ -1257,7 +1255,7 @@ namespace Oxide.Plugins
       }
 
       /// <summary>
-      /// Display an extended help messsage to the player.
+      /// Display an extended help message to the player.
       /// </summary>
       public string GetHelpExtended(BasePlayer player, string label)
       {
