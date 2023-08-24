@@ -1,4 +1,19 @@
 # Changelog
+All notable changes to this project will be documented in this file. Dates are displayed in UTC.
+
+# [1.6.0](https://github.com/RebeccaStevens/oxide-Plugin-AutoCode/compare/v1.5.0...v1.6.0) (2023-08-24)
+
+
+### Bug Fixes
+
+* spelling ([4b3eedb](https://github.com/RebeccaStevens/oxide-Plugin-AutoCode/commit/4b3eedb2a4ab94eea9f39d36db3c12cbeac229c1))
+
+
+### Features
+
+* remove option "pick" ([41fe9cd](https://github.com/RebeccaStevens/oxide-Plugin-AutoCode/commit/41fe9cdb6e72cb45619c1ef264cd1a5bf01df94d))
+
+# Changelog
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
