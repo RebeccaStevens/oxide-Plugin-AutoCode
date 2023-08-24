@@ -2,7 +2,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RebeccaStevens/uMod-Rust-Plugin-AutoCode.git"
+    "url": "git+https://github.com/RebeccaStevens/oxide-Plugin-AutoCode.git"
   },
   "license": "MIT",
   "author": {
