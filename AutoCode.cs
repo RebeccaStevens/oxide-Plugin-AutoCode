@@ -1,6 +1,6 @@
 using Oxide.Core;
-using Oxide.Core.Plugins;
 using Oxide.Core.Configuration;
+using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Libraries;
 using System;
 using System.Collections.Generic;
@@ -220,13 +220,13 @@ namespace Oxide.Plugins
         { "HelpExtendedOtherCommands", "Other Commands:" },
         { "HelpExtendedInfo", "Show your settings:\n{0}" },
         { "HelpExtendedSetCode", "Set your auto-code to 1234:\n{0}" },
-        { "HelpExtendedPickCode", "Open the code lock interface to set your auto-code:\n{0}" },
         { "HelpExtendedRandomCode", "Set your auto-code to a randomly generated code:\n{0}" },
         { "HelpExtendedRemoveCode", "Remove your set auto-code:\n{0}" },
         { "HelpExtendedCoreGuestCommands", "Each core command is also available in a guest code version. e.g.\n{0}" },
         { "HelpExtendedQuietMode", "Toggles on/off quiet mode:\n{0}" },
         { "HelpExtendedQuietModeDetails", "Less messages will be shown and your auto-code will be hidden." },
         { "HelpExtendedHelp", "Displays this help message:\n{0}" },
+        { "NoLongerSupportedPick", "\"{0}\" is no longer supported, please use \"{1}\" instead." },
         { "NoEscape.RaidBlocked", "Auto-code disabled due to raid block." },
         { "NoEscape.CombatBlocked", "Auto-code disabled due to combat block." },
       }, this);
@@ -443,55 +443,6 @@ namespace Oxide.Plugins
     public string GenerateRandomCode()
     {
       return Core.Random.Range(0, 10000).ToString("0000");
-    }
-
-    /// <summary>
-    /// Open the code lock UI for the given player.
-    /// </summary>
-    /// <param name="player">The player to open the lock UI for.</param>
-    /// <param name="guest">If true, the guest code will be set instead of the main code.</param>
-    public void OpenCodeLockUI(BasePlayer player, bool guest = false)
-    {
-      // Make sure any old code lock is destroyed.
-      DestroyTempCodeLock(player);
-
-      // Create a temporary code lock.
-      CodeLock codeLock = GameManager.server.CreateEntity(
-        "assets/prefabs/locks/keypad/lock.code.prefab",
-        player.eyes.position + new Vector3(0, -3, 0)
-      ) as CodeLock;
-
-      // Creation failed? Exit.
-      if (codeLock == null)
-      {
-        Interface.Oxide.LogError("Failed to create code lock.");
-        return;
-      }
-
-      // Don't save this code lock.
-      codeLock.enableSaving = false;
-
-      // Associate the lock with the player.
-      tempCodeLocks.Add(player, new TempCodeLockInfo(codeLock, guest));
-
-      // Spawn and lock the code lock.
-      codeLock.Spawn();
-      codeLock.SetFlag(BaseEntity.Flags.Locked, true);
-
-      // Open the code lock UI.
-      codeLock.ClientRPCPlayer(null, player, "EnterUnlockCode");
-
-      // Listen for code lock codes.
-      Subscribe("OnCodeEntered");
-
-      // Destroy the temporary code lock in 20s.
-      timer.In(20f, () =>
-      {
-        if (tempCodeLocks.ContainsKey(player) && tempCodeLocks[player].CodeLock == codeLock)
-        {
-          DestroyTempCodeLock(player);
-        }
-      });
     }
 
     /// <summary>
@@ -1066,16 +1017,10 @@ namespace Oxide.Plugins
         // Pick code.
         if (operation == PickCode)
         {
-          if (argsRemainingCount > 0)
-          {
-            plugin.Message(
-              player,
-              string.Format(plugin.lang.GetMessage("InvalidArgsTooMany", plugin, player.UserIDString), label)
-            );
-            return;
-          }
-
-          plugin.OpenCodeLockUI(player, guest);
+          plugin.Message(
+            player,
+            string.Format(plugin.lang.GetMessage("NoLongerSupportedPick", plugin, player.UserIDString), PickCode, SetCode)
+          );
           return;
         }
 
@@ -1242,7 +1187,6 @@ namespace Oxide.Plugins
                     SetCode,
                     "1234"
                   ),
-                  PickCode,
                   RandomCode,
                   RemoveCode
                 })
@@ -1274,10 +1218,6 @@ namespace Oxide.Plugins
                 string.Format(
                   plugin.lang.GetMessage("HelpExtendedSetCode", plugin, player.UserIDString),
                   Formatter.Indent(Formatter.Command(string.Format("{0} {1}", label, "1234")))
-                ),
-                string.Format(
-                  plugin.lang.GetMessage("HelpExtendedPickCode", plugin, player.UserIDString),
-                  Formatter.Indent(Formatter.Command(string.Format("{0} {1}", label, PickCode)))
                 ),
                 string.Format(
                   plugin.lang.GetMessage("HelpExtendedRandomCode", plugin, player.UserIDString),

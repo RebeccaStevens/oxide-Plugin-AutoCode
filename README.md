@@ -20,7 +20,6 @@ Allow players to automatically try and unlock locked code locks with their code.
 _You_ refers to the player running the command.
 
 - `code 1234` - Sets your auto-code to 1234.
-- `code pick` - Opens the code lock interface for you to set your auto-code.
 - `code random` - Sets your auto-code to a random code.
 - `code remove` - Removes your set auto-code (and guest auto-code).
 
