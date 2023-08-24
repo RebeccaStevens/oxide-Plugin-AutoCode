@@ -13,7 +13,7 @@ plugins:
 
         All notable changes to this project will be documented in this file. Dates are displayed in UTC."
   - - "@semantic-release/exec"
-    - prepareCmd: "node ./scripts/prepareForRelease.js ${nextRelease.version}"
+    - prepareCmd: "node ./scripts/prepareForRelease.mjs ${nextRelease.version}"
   - - "@semantic-release/git"
     - assets:
       - "CHANGELOG.md"
