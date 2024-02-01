@@ -24,7 +24,7 @@
     "@semantic-release/github": "9.2.6",
     "@semantic-release/release-notes-generator": "12.1.0",
     "commitizen": "4.3.0",
-    "cspell": "8.3.1",
+    "cspell": "8.3.2",
     "cz-conventional-changelog": "3.3.0",
     "husky": "8.0.3",
     "lint-staged": "15.2.0",
