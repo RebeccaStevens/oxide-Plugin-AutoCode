@@ -26,7 +26,7 @@
     "commitizen": "4.3.0",
     "cspell": "8.13.0",
     "cz-conventional-changelog": "3.3.0",
-    "husky": "9.1.4",
+    "husky": "9.1.5",
     "lint-staged": "15.2.7",
     "prettier": "3.3.3",
     "semantic-release": "24.0.0",
