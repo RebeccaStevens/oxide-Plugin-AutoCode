@@ -27,7 +27,7 @@
     "cspell": "8.13.0",
     "cz-conventional-changelog": "3.3.0",
     "husky": "9.1.5",
-    "lint-staged": "15.2.7",
+    "lint-staged": "15.2.10",
     "prettier": "3.3.3",
     "semantic-release": "24.0.0",
     "semver": "7.6.3"
