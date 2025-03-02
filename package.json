@@ -32,5 +32,5 @@
     "semantic-release": "24.2.3",
     "semver": "7.7.1"
   },
-  "packageManager": "pnpm@9.15.6"
+  "packageManager": "pnpm@10.5.2"
 }
